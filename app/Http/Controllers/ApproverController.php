@@ -1,0 +1,155 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\LeaveRequest;
+use App\Models\MissionRequest;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+// use Illuminate\Http\Request;
+
+class ApproverController extends Controller
+{
+
+    public function dashboard()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        // ១. បង្កើត Query មូលដ្ឋានដោយប្រើ Eager Loading ដើម្បីការពារ Error property on null
+        $leaveQuery = LeaveRequest::with('user.departments');
+        $missionQuery = MissionRequest::with('user.departments');
+
+        // ២. ទាញយកឈ្មោះ Department របស់ Approver ដែលកំពុង Login (ឧទាហរណ៍៖ IT ឬ Sales)
+        $approverDepts = $user->departments->pluck('name');
+
+        // ៣. បែងចែកការមើលឃើញតាម Role និង Department
+        if ($user->hasRole('team_leader')) {
+            // Team Leader មើលឃើញតែសំណើរបស់កូនចៅក្នុង Dept ខ្លួនឯង និង Status pending_tl
+            $pendingLeaveRequests = $leaveQuery->where('status', 'pending_tl')
+                ->whereHas('user.departments', function($q) use ($approverDepts) {
+                    $q->whereIn('name', $approverDepts);
+                })->get();
+
+            $pendingMissionRequests = $missionQuery->where('status', 'pending_tl')
+                ->whereHas('user.departments', function($q) use ($approverDepts) {
+                    $q->whereIn('name', $approverDepts);
+                })->get();
+        }
+        elseif ($user->hasRole('cfo')) {
+            // CFO មើលឃើញតែសំណើពី Sales Dept និង Status pending_cfo
+            $pendingLeaveRequests = $leaveQuery->where('status', 'pending_cfo')
+                ->whereHas('user.departments', function($q) {
+                    $q->where('name', 'Sales Department');
+                })->get();
+
+            $pendingMissionRequests = $missionQuery->where('status', 'pending_cfo')
+                ->whereHas('user.departments', function($q) {
+                    $q->where('name', 'Sales Department');
+                })->get();
+        }
+        elseif ($user->hasRole('hr_manager')) {
+            // HR មើលឃើញសំណើដែលមកដល់ដៃខ្លួន (pending_hr) ពីគ្រប់ Dept
+            $pendingLeaveRequests = $leaveQuery->where('status', 'pending_hr')->get();
+            $pendingMissionRequests = $missionQuery->where('status', 'pending_hr')->get();
+        }
+        elseif ($user->hasRole('ceo')) {
+            // CEO មើលឃើញសំណើបេសកកម្មដែលមកដល់ដៃខ្លួន (pending_ceo)
+            $pendingLeaveRequests = collect();
+            $pendingMissionRequests = $missionQuery->where('status', 'pending_ceo')->get();
+        }
+        else {
+            $pendingLeaveRequests = collect();
+            $pendingMissionRequests = collect();
+        }
+        return view('approver.dashboard', compact('pendingLeaveRequests', 'pendingMissionRequests'));
+    }
+
+    public function approveLeave(LeaveRequest $leaveRequest)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $requester = $leaveRequest->user;
+
+        // ឆែក Department របស់ម្ចាស់សំណើ
+        $isIT = $requester?->departments->contains('name', 'IT Department') ?? false;
+        $isSales = $requester?->departments->contains('name', 'Sales Department') ?? false;
+
+        // Logic សម្រាប់ Team Leader
+        if ($user->hasRole('team_leader') && $leaveRequest->status === 'pending_tl') {
+            if ($isIT) {
+                $leaveRequest->update(['status' => 'pending_hr']); // IT: TL -> HR
+            } elseif ($isSales) {
+                $leaveRequest->update(['status' => 'pending_cfo']); // Sales: TL -> CFO
+            }
+            return back()->with('success', 'បញ្ជូនទៅដំណាក់កាលបន្ទាប់រួចរាល់');
+        }
+
+        // Logic សម្រាប់ CFO (តែផ្នែក Sales ប៉ុណ្ណោះ)
+        if ($user->hasRole('cfo') && $leaveRequest->status === 'pending_cfo' && $isSales) {
+            $leaveRequest->update(['status' => 'pending_hr']); // CFO -> HR
+            return back()->with('success', 'CFO បានអនុម័ត');
+        }
+
+        // Logic សម្រាប់ HR
+        if ($user->hasRole('hr_manager') && $leaveRequest->status === 'pending_hr') {
+            $leaveRequest->update(['status' => 'approved']);
+            return back()->with('success', 'អនុម័តជាស្ថាពរដោយ HR');
+        }
+
+        return back()->with('error', 'អ្នកមិនមានសិទ្ធិអនុម័តសំណើនេះទេ។');
+    }
+    public function rejectLeave(LeaveRequest $leaveRequest)
+{
+    $leaveRequest->update(['status' => 'rejected']);
+    return back()->with('error', 'សំណើច្បាប់ត្រូវបានបដិសេធ។');
+}
+
+    public function approveMission(MissionRequest $missionRequest)
+{
+    /** @var User $user */
+    $user = Auth::user();
+    $missionRequest->load('user.departments');
+    $requester = $missionRequest->user;
+    $isSales = $requester?->departments->contains('name', 'Sales Department') ?? false;
+
+    // ១. ដំណាក់កាល Team Leader
+    if ($user->hasRole('team_leader') && $missionRequest->status === 'pending_tl') {
+        if ($isSales) {
+            // Sales follows: TL -> CFO -> HR -> CEO
+            $missionRequest->update(['status' => 'pending_cfo']);
+        } else {
+            // IT follows: TL -> CEO (FIXED: jump straight to CEO)
+            $missionRequest->update(['status' => 'pending_ceo']);
+        }
+        return back()->with('success', 'TL បានអនុម័ត');
+    }
+
+    // ២. ដំណាក់កាល CFO (Sales Only)
+    if ($user->hasRole('cfo') && $missionRequest->status === 'pending_cfo' && $isSales) {
+        $missionRequest->update(['status' => 'pending_hr']);
+        return back()->with('success', 'CFO បានអនុម័ត');
+    }
+
+    // ៣. ដំណាក់កាល HR (Sales Only)
+    if ($user->hasRole('hr_manager') && $missionRequest->status === 'pending_hr' && $isSales) {
+        $missionRequest->update(['status' => 'pending_ceo']);
+        return back()->with('success', 'HR បានអនុម័ត');
+    }
+
+    // ៤. ដំណាក់កាល CEO (Final for everyone)
+    if ($user->hasRole('ceo') && $missionRequest->status === 'pending_ceo') {
+        $missionRequest->update(['status' => 'approved']);
+        return back()->with('success', 'CEO បានអនុម័តជាស្ថាពរ');
+    }
+
+    return back()->with('error', 'មិនអាចអនុម័តបានទេ។');
+
+}
+public function rejectMission(MissionRequest $missionRequest)
+{
+    $missionRequest->update(['status' => 'rejected']);
+    return back()->with('error', 'សំណើបេសកកម្មត្រូវបានបដិសេធ។');
+}
+    // ... function rejectLeave និង rejectMission ទុកដូចដើម
+}

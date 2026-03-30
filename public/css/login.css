@@ -1,0 +1,49 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    min-height: 100vh;
+    background: rgb(95, 87, 255);
+    color: #fff;
+}
+
+.login-card {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgb(110, 167, 230);
+}
+
+.login-title {
+    letter-spacing: -0.03em;
+    font-weight: 700;
+}
+
+.login-subtitle {
+    opacity: 0.85;
+}
+
+.btn-primary {
+    padding: 0.85rem 2.2rem;
+    font-weight: 600;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 0 0 0.15rem rgba(79, 156, 245, 0.35);
+    border-color: rgba(79, 156, 245, 0.6);
+}
+
+.form-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
