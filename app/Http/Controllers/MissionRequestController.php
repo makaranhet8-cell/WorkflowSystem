@@ -9,19 +9,31 @@ use Illuminate\Support\Facades\Auth;
 class MissionRequestController extends Controller
 {
     public function index()
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
+{
+    /** @var User $user */
+    $user = Auth::user();
 
-        $missionRequests = MissionRequest::with('user.departments') // ប្តូរឈ្មោះឱ្យត្រូវជាមួយ view (missionRequests)
-            ->when($user instanceof User && ! $user->isApproverOrDepartmentAdmin(), function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->latest()
-            ->get();
+    // បង្កើត Query មូលដ្ឋាន
+    $query = MissionRequest::with('user.departments')->latest();
 
-        return view('mission_requests.index', compact('missionRequests'));
+    // បន្ថែមលក្ខខណ្ឌចម្រោះសម្រាប់ Role Admin
+    if ($user->hasRole('admin')) {
+        $adminDeptIds = $user->departments->pluck('id');
+
+        // បង្ខំឱ្យបង្ហាញតែសំណើរបស់បុគ្គលិកដែលនៅក្នុង Department ជាមួយ Admin ប៉ុណ្ណោះ
+        $query->whereHas('user.departments', function($q) use ($adminDeptIds) {
+            $q->whereIn('departments.id', $adminDeptIds);
+        });
     }
+    // សម្រាប់បុគ្គលិកធម្មតា (Staff) ឱ្យឃើញតែសំណើផ្ទាល់ខ្លួន
+    elseif (!$user->isApproverOrDepartmentAdmin()) {
+        $query->where('user_id', $user->id);
+    }
+
+    $missionRequests = $query->get();
+
+    return view('mission_requests.index', compact('missionRequests'));
+}
 
     public function create()
     {
@@ -78,7 +90,7 @@ class MissionRequestController extends Controller
     public function update(Request $request, $id)
     {
         $missionRequest = MissionRequest::findOrFail($id);
-        
+
         if ($request->has('user_name')) {
         $missionRequest->user->update([
             'name' => $request->user_name

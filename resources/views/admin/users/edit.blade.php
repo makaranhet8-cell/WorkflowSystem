@@ -13,8 +13,7 @@
 <div class="main-container">
     <div class="form-card">
         <h2>Edit User:</h2>
-
-        <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
+            <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -22,30 +21,25 @@
                 <label class="form-label">Name</label>
                 <input type="text" name="name" value="{{ old('name', $user->name) }}"
                     class="form-control @error('name') is-invalid @enderror">
-                @error('name') <div class="error-msg">{{ $message }}</div> @enderror
+                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Email Address</label>
                 <input type="email" name="email" value="{{ old('email', $user->email) }}"
                     class="form-control @error('email') is-invalid @enderror">
-                @error('email') <div class="error-msg">{{ $message }}</div> @enderror
+                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            {{-- <div class="mb-4">
-                <label class="form-label">Department</label>
-                <select name="department" class="form-select">
-                    <option value="IT Department" {{ $user->department == 'IT Department' ? 'selected' : '' }}>IT Department</option>
-                    <option value="Sales Department" {{ $user->department == 'Sales Department' ? 'selected' : '' }}>Sales Department</option>
-                </select>
-            </div> --}}
-
-            <button type="submit" class="btn-update shadow-sm">
+            <button type="submit" class="btn btn-primary shadow-sm w-100">
                 Update User
             </button>
-            <a href="{{ route('dashboard') }}" class="link-cancel">Cancel</a>
+
+            <div class="text-center mt-3">
+                <a href="{{ route('dashboard') }}" class="link-secondary text-decoration-none">Cancel</a>
+            </div>
         </form>
-    </div>
+     </div>
 </div>
 
 </body>

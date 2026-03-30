@@ -102,7 +102,7 @@ class ApproverController extends Controller
     public function rejectLeave(LeaveRequest $leaveRequest)
 {
     $leaveRequest->update(['status' => 'rejected']);
-    return back()->with('error', 'សំណើច្បាប់ត្រូវបានបដិសេធ។');
+    return back()->with('success', 'សំណើច្បាប់ត្រូវបានបដិសេធ។');
 }
 
     public function approveMission(MissionRequest $missionRequest)
@@ -149,7 +149,7 @@ class ApproverController extends Controller
 public function rejectMission(MissionRequest $missionRequest)
 {
     $missionRequest->update(['status' => 'rejected']);
-    return back()->with('error', 'សំណើបេសកកម្មត្រូវបានបដិសេធ។');
+    return back()->with('success', 'សំណើបេសកកម្មត្រូវបានបដិសេធ។');
 }
-    // ... function rejectLeave និង rejectMission ទុកដូចដើម
+
 }

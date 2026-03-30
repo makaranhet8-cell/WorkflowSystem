@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     public function index() {
-
         /** @var User $user */
         $user = Auth::user();
 
@@ -29,70 +29,58 @@ class UserController extends Controller
 
     public function create()
     {
-
         $departments = Department::all();
-
         return view('admin.users.create', compact('departments'));
     }
-    // Show the form to edit user details
-public function edit($id)
-{
-    $user = User::findOrFail($id);
-    return view('admin.users.edit', compact('user'));
-}
 
-// Update the user in the database
-public function update(Request $request, $id)
+    public function edit($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.users.edit', compact('user'));
+    }
+
+    public function update(Request $request, $id)
 {
-    // 1. Validate the input
+    // ១. Validate (កុំដាក់ department ព្រោះក្នុង Blade យើងបាន comment ចោល)
     $validated = $request->validate([
-        'name' => 'required|string|max:255',
+        'name'  => 'required|string|max:255',
         'email' => 'required|email|unique:users,email,' . $id,
-        'department' => 'required'
     ]);
 
-    // 2. Find and Update
+    // ២. Update ទិន្នន័យ
     $user = User::findOrFail($id);
     $user->update($validated);
 
-    // 3. Redirect back to the table with a success message
+    // ៣. ប្តូរការ Redirect (សំខាន់បំផុតគឺពាក្យ return)
+    // សាកល្បង redirect ទៅ 'admin.users.index' វិញព្រោះវាជាទំព័រក្នុងរូបភាពរបស់អ្នក
     return redirect()->route('dashboard')->with('success', 'User updated successfully!');
 }
-public function departmentEdit($id)
-{
-    // Fetch the user with their current departments
-    $user = User::with('departments')->findOrFail($id);
+    public function departmentEdit($id)
+    {
+        $user = User::with('departments')->findOrFail($id);
+        $departments = Department::all();
+        return view('admin.users.department_edit', compact('user', 'departments'));
+    }
 
-    // Fetch all departments for the checkboxes
-    $departments = Department::all();
+    public function departmentUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'department_id' => 'required|exists:departments,id',
+        ]);
 
-    return view('admin.users.department_edit', compact('user', 'departments'));
-}
-public function departmentUpdate(Request $request, $id)
-{
-    // 1. Validate the input
-    $request->validate([
-        'department_id' => 'required|exists:departments,id',
-    ]);
+        $user = User::findOrFail($id);
+        $user->departments()->sync([$request->department_id]);
 
-    // 2. Find the user
-    $user = User::findOrFail($id);
+        return redirect()->route('dashboard')->with('success', 'Department updated!');
+    }
 
-    // 3. Sync the department (Many-to-Many)
-    // Using sync replaces any old department with the new one
-    $user->departments()->sync([$request->department_id]);
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
 
-    // 4. Redirect back to the list
-    return redirect()->route('dashboard')->with('success', 'Department updated!');
-}
-// Remove the user from the database
-public function destroy($id)
-{
-    $user = User::findOrFail($id);
-    $user->delete();
-
-    return redirect()->back()->with('success', 'User deleted successfully');
-}
+        return redirect()->back()->with('success', 'User deleted successfully');
+    }
 
     public function store(Request $request)
     {
@@ -107,19 +95,14 @@ public function destroy($id)
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password), // ប្រើ Hash::make ជំនួស bcrypt (Standard ជាង)
             'role'     => $request->role,
         ]);
-
 
         if ($request->department_id) {
             $user->departments()->attach($request->department_id);
         }
 
-        return redirect()->route('dashboard')->with('success', 'User created with department successfully!');
-    }
-
-    public function showDepartments($id) {
-        return view('admin.users.departments');
+        return redirect()->route('dashboard')->with('success', 'User created successfully!');
     }
 }

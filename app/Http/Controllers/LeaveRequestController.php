@@ -10,24 +10,36 @@ use Illuminate\Support\Facades\Auth;
 class LeaveRequestController extends Controller
 {
     public function index()
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
+{
+    /** @var User $user */
+    $user = Auth::user();
 
-        $leaveRequests = LeaveRequest::with(['user.departments'])
-            ->when($user instanceof User && ! $user->isApproverOrDepartmentAdmin(), function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->latest()
-            ->get();
+    // ១. ចាប់ផ្ដើម Query ជាមួយ Relationship
+    $query = LeaveRequest::with('user.departments')->latest();
 
-        return view('leave_requests.index', ['leaveRequests' => $leaveRequests]);
+    // ២. បន្ថែមលក្ខខណ្ឌសម្រាប់ Role Admin
+    if ($user->hasRole('admin')) {
+        $adminDeptIds = $user->departments->pluck('id');
+
+        // ចម្រោះយកតែសំណើណាដែលស្ថិតក្នុង Department របស់ Admin នោះ
+        $query->whereHas('user.departments', function($q) use ($adminDeptIds) {
+            $q->whereIn('departments.id', $adminDeptIds);
+        });
     }
+    // សម្រាប់ Staff ធម្មតា (Optional: បើចង់ឱ្យឃើញតែរបស់ខ្លួនឯង)
+    elseif (!$user->isApproverOrDepartmentAdmin()) {
+        $query->where('user_id', $user->id);
+    }
+
+    $leaveRequests = $query->get();
+
+    return view('leave_requests.index', compact('leaveRequests'));
+}
     // ១. បង្ហាញ Form Edit
     public function edit($id)
     {
 
-        
+
         $leaveRequest = LeaveRequest::findOrFail($id);
 
     // បើ Status មិនមែនជា pending_tl មិនឱ្យចូលកែទេ

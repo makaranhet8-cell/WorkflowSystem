@@ -11,9 +11,9 @@
 <div class="container">
     <h1>Edit Department for {{ $user->name }}</h1>
 
-    <form action="{{ route('users.department.update', $user->id) }}" method="POST">
+    <form action="{{ route('admin.users.department.update', $user->id) }}" method="POST">
     @csrf
-    @method('PUT') 
+    @method('PUT')
 
     <div class="form-group">
         <label for="department">Select Department</label>

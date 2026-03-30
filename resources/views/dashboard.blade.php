@@ -30,7 +30,7 @@
                         <a href="{{ route('approver.dashboard') }}" class="nav-link text-white">Approvers</a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a href="{{ route('dashboard') }}" class="nav-link text-white">Recent Users</a>
+                        <a href="{{ route('dashboard') }}" class="nav-link text-white">List Users</a>
                     </li>
                 </ul>
             </div>
@@ -115,12 +115,11 @@
                 </div>
 
 
-
                 <!-- Recent Users Table -->
                 @if (auth()->user()->role=='admin')
                 <div class="card mt-5 bg-dark text-white">
                     <div class="card-header text-success">
-                        <h5>Recent Users</h5>
+                        <h5>List Users</h5>
                     </div>
 
                     <div class="card-body">
@@ -156,8 +155,8 @@
                                     <td>
                                         <div class="d-flex">
                                             <a href="{{ route('admin.users.department.edit', $user->id) }}" class="btn btn-info me-2 text-light">
-    Allocate
-</a>
+                                                Allocate
+                                            </a>
                                         <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success me-2">
                                             Edit
                                         </a>
