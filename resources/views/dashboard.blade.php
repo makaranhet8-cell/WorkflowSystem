@@ -125,6 +125,7 @@
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Role</th>
                                     <th>Departments</th>
                                     <th>Action</th>
                                 </tr>
@@ -136,6 +137,7 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
+                                    <td>{{ $user->role }}</td>
 
                                     <td>
                                         @if($user->departments->isEmpty())
