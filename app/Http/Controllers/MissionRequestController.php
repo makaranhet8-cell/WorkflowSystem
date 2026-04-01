@@ -38,7 +38,7 @@ class MissionRequestController extends Controller
     public function create()
     {
         $users = User::whereNotIn('role', [
-            'admin', 'ceo', 'hr_manager', 'team_leader', 'department_admin', 'cfo'
+            'system_admin','admin', 'ceo', 'hr_manager', 'team_leader', 'department_admin', 'cfo'
         ])->get();
 
         return view('mission_requests.create', compact('users'));

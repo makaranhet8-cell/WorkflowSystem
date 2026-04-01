@@ -38,17 +38,18 @@
                             <dd class="col-sm-8">{{ $missionRequest->purpose }}</dd>
 
                             <dt class="col-sm-4">Start Date</dt>
-                            <dd class="col-sm-8">{{ $missionRequest->start_date->format('Y-m-d') }}</dd>
+                            <dd class="col-sm-8">{{ $missionRequest->start_date->format('d-m-Y') }}</dd>
 
                             <dt class="col-sm-4">End Date</dt>
-                            <dd class="col-sm-8">{{ $missionRequest->end_date->format('Y-m-d') }}</dd>
+                            <dd class="col-sm-8">{{ $missionRequest->end_date->format('d-m-Y') }}</dd>
 
                             <dt class="col-sm-4">Department</dt>
                             <dd class="col-sm-8">{{ $missionRequest->user->departments->first()->name ?? 'N/A' }}</dd>
 
                             <dt class="col-sm-4">Submitted</dt>
-                            <dd class="col-sm-8">{{ $missionRequest->created_at->format('Y-m-d H:i') }}</dd>
+                            <dd class="col-sm-8">{{ $missionRequest->created_at->format('d-m-Y H:i A') }}</dd>
                         </dl>
+
                         <div class="footer-show d-flex justify-content-between">
                             <a href="{{ route('mission-requests.index') }}" class="btn btn-info text-white"><i class="fa-solid fa-arrow-left"></i> Back</a>
                             @if(Auth::user()->isApprover() && $missionRequest->status === 'pending')

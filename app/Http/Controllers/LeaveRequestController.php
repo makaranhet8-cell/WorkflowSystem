@@ -104,6 +104,7 @@ class LeaveRequestController extends Controller
 {
     // ទាញយកតែ User ណាដែលមិនមែនជា Admin, CEO, HR, Team Leader, និង Dept Admin
     $users = User::whereNotIn('role', [
+        'system_admin',
         'admin',
         'ceo',
         'hr_manager',
