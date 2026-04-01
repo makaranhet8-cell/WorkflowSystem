@@ -44,7 +44,7 @@
                             <dd class="col-sm-8">{{ $leaveRequest->user->departments->first()->name ?? 'N/A' }}</dd>
 
                             <dt class="col-sm-4">Submitted</dt>
-                            <dd class="col-sm-8">{{ $leaveRequest->created_at->format('d-m-Y H:i') }}</dd>
+                            <dd class="col-sm-8">{{ $leaveRequest->created_at->format('d-m-Y H:i A') }}</dd>
                         </dl>
                         <div class="footer-show d-flex justify-content-between">
                             <a href="{{ route('leave-requests.index') }}" class="btn btn-info text-white"><i class="fa-solid fa-arrow-left"></i> Back</a>
