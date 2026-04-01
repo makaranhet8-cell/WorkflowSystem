@@ -48,7 +48,8 @@
                     <option value="hr_manager" {{ old('role') === 'hr_manager' ? 'selected' : '' }}>HR Manager</option>
                     <option value="ceo" {{ old('role') === 'ceo' ? 'selected' : '' }}>CEO</option>
                     <option value="cfo" {{ old('role') === 'cfo' ? 'selected' : '' }}>CFO</option>
-                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin Department</option>
+                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin Department IT</option>
+                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin Department Sale</option>
                 </select>
                 @error('role') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
