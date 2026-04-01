@@ -47,7 +47,7 @@
                             <dd class="col-sm-8">{{ $leaveRequest->created_at->format('d-m-Y H:i') }}</dd>
                         </dl>
                         <div class="footer-show d-flex justify-content-between">
-                            <a href="{{ route('leave-requests.index') }}" class="btn btn-info text-white"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                            <a href="{{ route('leave-requests.index') }}" class="btn btn-info text-white"><i class="fa-solid fa-arrow-left"></i> Back</a>
                             @if(Auth::user()->isApprover() && $leaveRequest->status === 'pending')
                                 <div class="mt-3">
                                     <form action="{{ route('approver.leave.approve', $leaveRequest) }}" method="POST" class="d-inline">

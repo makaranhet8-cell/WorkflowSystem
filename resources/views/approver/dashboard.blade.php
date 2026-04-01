@@ -61,16 +61,16 @@
                                                     <div class="d-flex gap-1">
 
                                                         {{-- ប៊ូតុងសម្រាប់ System Admin --}}
-                                                @if(Auth::user()->hasRole('system_admin'))
-                                                    <form action="{{ route('approver.leave.approve', $request->id) }}" method="POST">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-success">Approve (Admin)</button>
-                                                    </form>
-                                                    <form action="{{ route('approver.leave.reject', $request->id) }}" method="POST">
+                                                        @if(Auth::user()->hasRole('system_admin'))
+                                                            <form action="{{ route('approver.leave.approve', $request->id) }}" method="POST">
                                                                 @csrf
-                                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('បដិសេធសំណើនេះ?')">Reject</button>
+                                                                <button type="submit" class="btn btn-sm btn-success">Approve (Admin)</button>
                                                             </form>
-                                                @endif
+                                                            <form action="{{ route('approver.leave.reject', $request->id) }}" method="POST">
+                                                                        @csrf
+                                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('បដិសេធសំណើនេះ?')">Reject</button>
+                                                                    </form>
+                                                        @endif
 
                                                         {{-- សម្រាប់ Team Leader (ទាំង IT និង Sales) --}}
                                                         @if(Auth::user()->hasRole('team_leader') && $request->status == 'pending_tl')
