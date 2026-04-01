@@ -16,16 +16,24 @@ class ApproverController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        // ១. បង្កើត Query មូលដ្ឋានដោយប្រើ Eager Loading ដើម្បីការពារ Error property on null
+
         $leaveQuery = LeaveRequest::with('user.departments');
         $missionQuery = MissionRequest::with('user.departments');
 
-        // ២. ទាញយកឈ្មោះ Department របស់ Approver ដែលកំពុង Login (ឧទាហរណ៍៖ IT ឬ Sales)
-        $approverDepts = $user->departments->pluck('name');
 
-        // ៣. បែងចែកការមើលឃើញតាម Role និង Department
+        $approverDepts = $user->departments->pluck('name');
+        ///
+
+        if ($user->hasRole('system_admin')) {
+    // បង្ហាញតែសំណើណាដែលមិនទាន់ Approved និងមិនទាន់ Rejected
+    $pendingLeaveRequests = $leaveQuery->whereNotIn('status', ['approved', 'rejected'])->get();
+    $pendingMissionRequests = $missionQuery->whereNotIn('status', ['approved', 'rejected'])->get();
+
+    return view('approver.dashboard', compact('pendingLeaveRequests', 'pendingMissionRequests'));
+}
+
+
         if ($user->hasRole('team_leader')) {
-            // Team Leader មើលឃើញតែសំណើរបស់កូនចៅក្នុង Dept ខ្លួនឯង និង Status pending_tl
             $pendingLeaveRequests = $leaveQuery->where('status', 'pending_tl')
                 ->whereHas('user.departments', function($q) use ($approverDepts) {
                     $q->whereIn('name', $approverDepts);
@@ -70,12 +78,16 @@ class ApproverController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $requester = $leaveRequest->user;
+        ///
+        if ($user->hasRole('system_admin')) {
+        $leaveRequest->update(['status' => 'approved']);
+        return back()->with('success', 'អនុម័តដោយ System Admin រួចរាល់');
+    }
 
-        // ឆែក Department របស់ម្ចាស់សំណើ
         $isIT = $requester?->departments->contains('name', 'IT Department') ?? false;
         $isSales = $requester?->departments->contains('name', 'Sales Department') ?? false;
 
-        // Logic សម្រាប់ Team Leader
+
         if ($user->hasRole('team_leader') && $leaveRequest->status === 'pending_tl') {
             if ($isIT) {
                 $leaveRequest->update(['status' => 'pending_hr']); // IT: TL -> HR
@@ -85,13 +97,13 @@ class ApproverController extends Controller
             return back()->with('success', 'បញ្ជូនទៅដំណាក់កាលបន្ទាប់រួចរាល់');
         }
 
-        // Logic សម្រាប់ CFO (តែផ្នែក Sales ប៉ុណ្ណោះ)
+
         if ($user->hasRole('cfo') && $leaveRequest->status === 'pending_cfo' && $isSales) {
             $leaveRequest->update(['status' => 'pending_hr']); // CFO -> HR
             return back()->with('success', 'CFO បានអនុម័ត');
         }
 
-        // Logic សម្រាប់ HR
+
         if ($user->hasRole('hr_manager') && $leaveRequest->status === 'pending_hr') {
             $leaveRequest->update(['status' => 'approved']);
             return back()->with('success', 'អនុម័តជាស្ថាពរដោយ HR');
@@ -112,8 +124,15 @@ class ApproverController extends Controller
     $missionRequest->load('user.departments');
     $requester = $missionRequest->user;
     $isSales = $requester?->departments->contains('name', 'Sales Department') ?? false;
+    ///
 
-    // ១. ដំណាក់កាល Team Leader
+
+    if ($user->hasRole('system_admin')) {
+        $missionRequest->update(['status' => 'approved']);
+        return back()->with('success', 'បេសកកម្មត្រូវបានអនុម័តដោយ System Admin');
+    }
+
+
     if ($user->hasRole('team_leader') && $missionRequest->status === 'pending_tl') {
         if ($isSales) {
             // Sales follows: TL -> CFO -> HR -> CEO
@@ -125,19 +144,19 @@ class ApproverController extends Controller
         return back()->with('success', 'TL បានអនុម័ត');
     }
 
-    // ២. ដំណាក់កាល CFO (Sales Only)
+
     if ($user->hasRole('cfo') && $missionRequest->status === 'pending_cfo' && $isSales) {
         $missionRequest->update(['status' => 'pending_hr']);
         return back()->with('success', 'CFO បានអនុម័ត');
     }
 
-    // ៣. ដំណាក់កាល HR (Sales Only)
+
     if ($user->hasRole('hr_manager') && $missionRequest->status === 'pending_hr' && $isSales) {
         $missionRequest->update(['status' => 'pending_ceo']);
         return back()->with('success', 'HR បានអនុម័ត');
     }
 
-    // ៤. ដំណាក់កាល CEO (Final for everyone)
+    
     if ($user->hasRole('ceo') && $missionRequest->status === 'pending_ceo') {
         $missionRequest->update(['status' => 'approved']);
         return back()->with('success', 'CEO បានអនុម័តជាស្ថាពរ');

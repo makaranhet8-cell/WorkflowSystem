@@ -52,15 +52,6 @@
                 </select>
                 @error('role') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
-            <div class="mb-3">
-                <label class="form-label">Select Department</label>
-                <select name="department_id" class="form-control" required>
-                    <option value=""> Choose Department </option>
-                    @foreach($departments as $dept)
-                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                    @endforeach
-                </select>
-            </div>
             <div class="footer d-flex justify-content-between">
                 <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Create User</button>

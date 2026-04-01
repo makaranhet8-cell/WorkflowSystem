@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mission Requests</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
   </head>
   <body>
     <div class="d-flex justify-content-end mx-5 mt-3">
@@ -72,17 +74,17 @@
                                 <div class="d-flex">
                                     @if ($request->status === 'pending_tl')
                                         <a href="{{ route('mission-requests.edit', $request->id) }}" class="btn btn-sm btn-info me-2">
-                                        Edit
+                                      <i class="fa-solid fa-pen-to-square"></i>  Edit
                                     </a>
                                     @endif
 
                                     <a href="{{ route('mission-requests.show', $request->id) }}"
-                                        class="btn btn-sm btn-success me-2">View</a>
-                                    @if($request->status === 'pending_tl')
+                                        class="btn btn-sm btn-success me-2"><i class="fa-solid fa-eye"></i> View</a>
+                                   @if(Auth::user()->role === 'system_admin' || $request->status === 'pending_tl')
                                         <form action="{{ route('mission-requests.destroy', $request->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fa-solid fa-trash text-white"></i> Delete</button>
                                         </form>
                                     @endif
                                 </div>

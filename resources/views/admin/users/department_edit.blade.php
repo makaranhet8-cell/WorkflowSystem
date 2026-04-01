@@ -5,31 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bootstrap demo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  </head>
-  <body>
+    <link href="{{ asset('css/department_edit.css') }}" rel="stylesheet">
+</head>
+<body>
 
-<div class="container">
-    <h1>Edit Department for {{ $user->name }}</h1>
+    <div class="container ">
+        <h1>Edit Department for {{ $user->name }}</h1>
 
-    <form action="{{ route('admin.users.department.update', $user->id) }}" method="POST">
-    @csrf
-    @method('PUT')
+        <form action="{{ route('admin.users.department.update', $user->id) }}" method="POST">
+            @csrf
+            @method('PUT')
 
-    <div class="form-group">
-        <label for="department">Select Department</label>
-        <select name="department_id" id="department" class="form-control">
-            @foreach($departments as $dept)
-                <option value="{{ $dept->id }}"
-                    {{ $user->departments->contains($dept->id) ? 'selected' : '' }}>
-                    {{ $dept->name }}
-                </option>
+            <div class="row mt-5">
+            @foreach($allDepartments as $department)
+                <div class="col-md-4 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                            name="department_ids[]"
+                            value="{{ $department->id }}"
+                            id="dept_{{ $department->id }}"
+                            {{-- ឆែកមើលថា បើ User មាន Department នេះហើយ ឱ្យវា Check ស្រាប់ --}}
+                            @if($user->departments->contains($department->id)) checked @endif>
+
+                        <label class="form-check-label" for="dept_{{ $department->id }}">
+                            {{ $department->name }}
+                        </label>
+                    </div>
+                </div>
             @endforeach
-        </select>
-    </div>
+        </form>
+        <div class="mt-5">
+            <a href="{{ route('dashboard') }}" class="btn btn-info ">Cancel</a>
+            <button type="submit" class="btn btn-primary">Update Departments</button>
 
-    <button type="submit" class="btn btn-primary mt-3">Update Department</button>
-</form>
-</div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 </html>

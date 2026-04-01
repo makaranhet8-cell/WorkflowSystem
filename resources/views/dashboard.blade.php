@@ -29,9 +29,7 @@
                     <li class="nav-item mb-2">
                         <a href="{{ route('approver.dashboard') }}" class="nav-link text-white">Approvers</a>
                     </li>
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('dashboard') }}" class="nav-link text-white">List Users</a>
-                    </li>
+
                 </ul>
             </div>
 
@@ -52,11 +50,9 @@
                             <span class="d-block fw-bold text-white">{{ Auth::user()->name }}</span>
                             <small class="text-muted d-block" style="font-size: 0.75rem;">{{ Auth::user()->role ?? 'User' }}</small>
                         </div>
-                        <i class="ms-2 text-white" style="font-size: 0.8rem;">▼</i>
+                        <i class="ms-2 text-white" style="font-size: 0.8rem;"><i class="fa-solid fa-arrow-down"></i></i>
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="{{ route('dashboard') }}">My Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ route('logout') }}" class="btn btn-danger">Logout</a></li>
                     </ul>
                 </div>
@@ -106,7 +102,7 @@
                     class="btn btn-outline-info">
                         <span><i class="fa-solid fa-user-plus"></i> </span> Mission Request
                     </a>
-                    @if(Auth::user()->isDepartmentAdmin())
+                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'system_admin')
                         <a href="{{ route('admin.users.create') }}"
                         class="btn btn-outline-success">
                             <span><i class="fa-solid fa-user-plus"></i> </span> Create User
@@ -116,7 +112,7 @@
 
 
                 <!-- Recent Users Table -->
-                @if (auth()->user()->role=='admin')
+                @if (auth()->user()->role === 'admin' || auth()->user()->role === 'system_admin')
                 <div class="card mt-5 bg-dark text-white">
                     <div class="card-header text-success">
                         <h5>List Users</h5>
@@ -155,17 +151,18 @@
                                     <td>
                                         <div class="d-flex">
                                             <a href="{{ route('admin.users.department.edit', $user->id) }}" class="btn btn-info me-2 text-light">
-                                                Allocate
+                                               <i class="fa-solid fa-share-from-square"></i> Allocate
+
                                             </a>
                                         <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success me-2">
-                                            Edit
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit
                                         </a>
 
                                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger">
-                                                Delete
+                                                <i class="fa-solid fa-trash text-white"></i> Delete
                                             </button>
                                         </form>
                                         </div>

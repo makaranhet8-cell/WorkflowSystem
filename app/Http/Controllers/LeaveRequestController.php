@@ -80,13 +80,26 @@ class LeaveRequestController extends Controller
     return redirect()->route('leave-requests.index')->with('success', 'កែប្រែទិន្នន័យ និងឈ្មោះអ្នកប្រើប្រាស់បានជោគជ័យ!');
 }
     // ៣. លុបទិន្នន័យ
-    public function destroy($id)
-    {
-        $leaveRequest = LeaveRequest::findOrFail($id);
-        $leaveRequest->delete();
+   public function destroy($id)
+{
+    $leaveRequest = LeaveRequest::findOrFail($id);
+    $user = Auth::user();
 
-        return redirect()->back()->with('success', 'លុបបានជោគជ័យ!');
+    // បន្ថែមលក្ខខណ្ឌពិនិត្យសិទ្ធិ
+    if ($user->role === 'system_admin') {
+        // បើជា System Admin គឺអាចលុបបានទាំងអស់
+        $leaveRequest->delete();
+        return redirect()->back()->with('success', 'សំណើត្រូវបានលុបដោយជោគជ័យ (ដោយ Admin)។');
     }
+
+    // សម្រាប់ User ធម្មតា អនុញ្ញាតឱ្យលុបតែសំណើដែលមិនទាន់បាន Approve ប៉ុណ្ណោះ
+    if ($leaveRequest->user_id === $user->id && $leaveRequest->status === 'pending_tl') {
+        $leaveRequest->delete();
+        return redirect()->back()->with('success', 'សំណើរបស់អ្នកត្រូវបានលុប។');
+    }
+
+    return redirect()->back()->with('error', 'អ្នកមិនមានសិទ្ធិលុបសំណើដែលបានអនុម័តរួចហើយនោះទេ។');
+}
     public function create()
 {
     // ទាញយកតែ User ណាដែលមិនមែនជា Admin, CEO, HR, Team Leader, និង Dept Admin

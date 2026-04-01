@@ -56,23 +56,27 @@ class UserController extends Controller
     return redirect()->route('dashboard')->with('success', 'User updated successfully!');
 }
     public function departmentEdit($id)
-    {
-        $user = User::with('departments')->findOrFail($id);
-        $departments = Department::all();
-        return view('admin.users.department_edit', compact('user', 'departments'));
-    }
+{
+    $user = User::with('departments')->findOrFail($id);
+
+    // បន្ថែមជួរនេះ ដើម្បីទាញយក Department ទាំងអស់ពី Database
+    $allDepartments = Department::all();
+
+    return view('admin.users.department_edit', compact('user', 'allDepartments'));
+}
 
     public function departmentUpdate(Request $request, $id)
-    {
-        $request->validate([
-            'department_id' => 'required|exists:departments,id',
-        ]);
+{
+    $user = User::findOrFail($id);
 
-        $user = User::findOrFail($id);
-        $user->departments()->sync([$request->department_id]);
+    // ទទួលយក Array នៃ IDs (ឧទាហរណ៍៖ [1, 2])
+    $departmentIds = $request->input('department_ids', []);
 
-        return redirect()->route('dashboard')->with('success', 'Department updated!');
-    }
+    // រក្សាទុកទិន្នន័យទៅក្នុង Table department_user
+    $user->departments()->sync($departmentIds);
+
+    return redirect()->route('dashboard')->with('success', 'បានដាក់បញ្ជូលផ្នែកដោយជោគជ័យ');
+}
 
     public function destroy($id)
     {

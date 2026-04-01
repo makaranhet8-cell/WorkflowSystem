@@ -12,6 +12,7 @@ use App\Http\Controllers\MissionRequestController;
 use App\Http\Controllers\ApproverController;
 // use App\Http\Controllers\UserDepartmentController;
 
+
 // Models
 use App\Models\User;
 use App\Models\LeaveRequest;
@@ -47,34 +48,57 @@ Route::middleware('auth')->group(function () {
 
     // --- Dashboard logic ---
     Route::get('/dashboard', function () {
-        /** @var User|null $user */
-        $user = Auth::user();
-        $allUsers = [];
-        $leaveQuery = LeaveRequest::with('user.departments')->latest();
-        $missionQuery = MissionRequest::with('user.departments')->latest();
+    /** @var User|null $user */
+    $user = Auth::user();
 
-        if ($user && $user->isApproverOrDepartmentAdmin()) {
-            $userQuery = User::with('departments');
+    // បង្កើត Collection ទទេជាមុនដើម្បីការពារ Error
+    $allUsers = collect();
+    $leaveRequests = collect();
+    $missionRequests = collect();
 
-            if ($user->role === 'admin') {
-                $adminDeptIds = $user->departments->pluck('id');
-                $userQuery->whereHas('departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds));
-                $leaveQuery->whereHas('user.departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds));
-                $missionQuery->whereHas('user.departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds));
-            }
+    // ចាប់ផ្ដើម Query ជាមួយ Relationship
+    $leaveQuery = LeaveRequest::with('user.departments')->latest();
+    $missionQuery = MissionRequest::with('user.departments')->latest();
 
-            $allUsers = $userQuery->whereNotIn('role', ['admin', 'team_leader', 'hr_manager', 'ceo', 'cfo'])->get();
-        } else {
-            $leaveQuery->where('user_id', $user?->id);
-            $missionQuery->where('user_id', $user?->id);
+    if ($user && $user->isApproverOrDepartmentAdmin()) {
+        $userQuery = User::with('departments');
+
+        // ១. ប្រសិនបើជា System Admin (មើលឃើញទាំងអស់)
+        if ($user->role === 'system_admin') {
+            $allUsers = $userQuery->where('id', '!=', $user->id)->get();
+            $leaveRequests = $leaveQuery->get();
+            $missionRequests = $missionQuery->get();
         }
+        // ២. ប្រសិនបើជា Department Admin (IT ឬ Sales)
+        elseif ($user->role === 'admin') {
+            $adminDeptIds = $user->departments->pluck('id');
 
-        return view('dashboard', [
-            'leaveRequests' => $leaveQuery->get(),
-            'missionRequests' => $missionQuery->get(),
-            'allUsers' => $allUsers,
-        ]);
-    })->name('dashboard');
+            $allUsers = $userQuery->whereHas('departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds))
+                                  ->whereNotIn('role', ['admin', 'team_leader', 'hr_manager', 'ceo', 'cfo'])
+                                  ->get();
+
+            $leaveRequests = $leaveQuery->whereHas('user.departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds))->get();
+            $missionRequests = $missionQuery->whereHas('user.departments', fn($q) => $q->whereIn('departments.id', $adminDeptIds))->get();
+        }
+        // ៣. សម្រាប់ Role ផ្សេងទៀត (HR, CEO, CFO)
+        else {
+            $leaveRequests = $leaveQuery->get();
+            $missionRequests = $missionQuery->get();
+        }
+    }
+    // ៤. សម្រាប់បុគ្គលិកធម្មតា (Staff) ឱ្យឃើញតែរបស់ខ្លួនឯង
+    else {
+        $leaveRequests = $leaveQuery->where('user_id', $user?->id)->get();
+        $missionRequests = $missionQuery->where('user_id', $user?->id)->get();
+    }
+
+    return view('dashboard', [
+        'leaveRequests' => $leaveRequests,
+        'missionRequests' => $missionRequests,
+        'allUsers' => $allUsers,
+        // យើងមិនចាំបាច់ផ្ញើ totalUsers ទេ ព្រោះយើងអាច count($allUsers) ក្នុង Blade បាន
+    ]);
+})->name('dashboard');
 
     // --- Requests Management (Leave & Mission) ---
     Route::resource('leave-requests', LeaveRequestController::class);
@@ -89,6 +113,8 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(EnsureUserIsApprover::class)->group(function () {
+
+
 
         // User Management (Admin)
         Route::prefix('admin/users')->name('admin.users.')->group(function () {
@@ -113,6 +139,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/leave-requests/{leaveRequest}/reject', [ApproverController::class, 'rejectLeave'])->name('leave.reject');
             Route::post('/mission-requests/{missionRequest}/approve', [ApproverController::class, 'approveMission'])->name('mission.approve');
             Route::post('/mission-requests/{missionRequest}/reject', [ApproverController::class, 'rejectMission'])->name('mission.reject');
+
         });
     });
 });

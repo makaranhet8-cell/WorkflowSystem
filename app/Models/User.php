@@ -54,12 +54,14 @@ class User extends Authenticatable
 
     public function isDepartmentAdmin(): bool
     {
+        return in_array($this->role, ['admin', 'system_admin']);
         return $this->role === 'admin';
+
     }
     public function isApproverOrDepartmentAdmin()
 {
 
-    return in_array($this->role, ['admin', 'approver', 'team_leader', 'ceo', 'hr_manager','cfo']);
+    return in_array($this->role, ['admin', 'system_admin','approver', 'team_leader', 'ceo', 'hr_manager','cfo']);
 }
 
     public function leaveRequests(): HasMany
@@ -72,11 +74,11 @@ class User extends Authenticatable
         return $this->hasMany(MissionRequest::class);
     }
 
-    public function departments()
-    {
+    // App\Models\User.php
+public function departments()
+{
     return $this->belongsToMany(Department::class, 'department_user', 'user_id', 'department_id');
-    }
-
+}
     public function hasRole($role): bool
     {
         return $this->role === $role;
