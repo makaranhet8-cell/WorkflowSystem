@@ -1,0 +1,101 @@
+/* ការកំណត់ទូទៅ */
+body {
+    background-color: #1a1d21; /* ពណ៌ងងឹតដូចក្នុង Dashboard */
+    color: #e9ecef;
+    font-family: 'Inter', sans-serif;
+}
+
+/* កែសម្រួល Navbar ឱ្យស៊ីគ្នា */
+.navbar {
+    background-color: #111418 !important;
+    border-bottom: 1px solid #2d3238;
+}
+
+/* កែសម្រួលប្រអប់ Form ធំ */
+.container.mt-5 {
+    max-width: 500px;
+    background-color: #212529; /* ពណ៌ប្រផេះចាស់ */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* ចំណងជើង */
+h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #ffffff;
+}
+
+/* Label */
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #adb5bd;
+    margin-bottom: 8px;
+}
+
+/* កែសម្រួល Input និង Select ឱ្យទៅជាងងឹត */
+.form-control, .form-select {
+    background-color: #2c3034 !important; /* ពណ៌ផ្ទៃក្នុង Input */
+    border: 1px solid #495057 !important; /* ពណ៌បន្ទាត់ជុំវិញ */
+    color: #ffffff !important; /* ពណ៌អក្សរពេលវាយ */
+}
+
+/* ពេលយើងយក Mouse ទៅ Click (Focus) */
+.form-control:focus, .form-select:focus {
+    background-color: #2c3034;
+    border-color: #0d6efd; /* ពណ៌ខៀវដូចប៊ូតុង */
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    color: #ffffff;
+}
+
+
+/* ប្តូរពណ៌អក្សរក្នុង Option ពេល Select */
+option {
+    background-color: #212529;
+    color: white;
+}
+
+/* ប៊ូតុង Create User */
+.btn-primary {
+    background-color: #3498db;
+    border: none;
+    padding: 12px 25px;
+    font-weight: 600;
+    border-radius: 8px;
+    width: 100%; /* ធ្វើឱ្យប៊ូតុងពេញទទឹង */
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+/* ប៊ូតុង Cancel */
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid #495057;
+    color: #adb5bd;
+    padding: 12px 25px;
+    border-radius: 8px;
+}
+
+.btn-secondary:hover {
+    background-color: #495057;
+    color: white;
+}
+
+/* Error Message */
+.text-danger {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* រៀបចំ Footer ប៊ូតុងឱ្យនៅជួរគ្នា */
+.footer {
+    gap: 15px;
+    margin-top: 20px;
+}

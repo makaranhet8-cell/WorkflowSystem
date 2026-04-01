@@ -156,7 +156,7 @@ class ApproverController extends Controller
         return back()->with('success', 'HR បានអនុម័ត');
     }
 
-    
+
     if ($user->hasRole('ceo') && $missionRequest->status === 'pending_ceo') {
         $missionRequest->update(['status' => 'approved']);
         return back()->with('success', 'CEO បានអនុម័តជាស្ថាពរ');
