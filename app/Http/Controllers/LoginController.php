@@ -17,57 +17,71 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'name' => 'nullable|string|max:255',
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $role = 'user';
-        if ($request->email === 'admin@example.com') {
-            $role = 'approver';
-        } elseif ($request->email === 'deptadmin@example.com') {
-            $role = 'admin';
-        }
-
-        $user = User::firstOrCreate(
-            ['email' => $request->email],
-            ['name' => $request->name ?: 'Demo User', 'password' => Hash::make($request->password), 'role' => $role]
-        );
-
-        if (in_array($request->email, ['admin@example.com', 'deptadmin@example.com'], true) && $user->role !== $role) {
-            $user->role = $role;
-            $user->save();
-        }
-
-        if (!($request->name) && $user->name !== $request->name) {
-            $user->name = $request->name;
-            $user->save();
-        }
-
+        // ១. ផ្ទៀងផ្ទាត់ការ Login (ប្រើ Auth::attempt តែម្តងគឺងាយស្រួលជាង)
         if (Auth::attempt($request->only('email', 'password'))) {
-            return redirect()->route('dashboard');
+            $request->session()->regenerate();
+
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            // ២. កំណត់ Role ពិសេសតាមរយៈ Email (ប្រសិនបើចង់បាន)
+            if ($user->email === 'admin@example.com') {
+                $user->syncRoles(['admin']);
+            }
+
+            return redirect()->intended('/dashboard');
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        // ៣. បើ Login មិនចូល ឆែកមើលថាតើគួរបង្កើត User Demo ដែរឬទេ?
+        // (ចំណាំ៖ ក្នុងប្រព័ន្ធពិត គេមិនសូវបង្កើត User ក្នុង Login method បែបនេះទេ)
+        $userExists = User::where('email', $request->email)->exists();
+        if (!$userExists && $request->email === 'admin@example.com') {
+             $user = User::create([
+                'name' => 'Administrator',
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+            $user->assignRole('admin');
+
+            Auth::login($user);
+            return redirect()->intended('/dashboard');
+        }
+
+        return back()->withErrors(['email' => 'អ៊ីមែល ឬលេខសម្ងាត់មិនត្រឹមត្រូវ']);
     }
+
     public function register(Request $request)
-{
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
 
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
+        // ដាក់ Role ជា 'user' (ត្រូវប្រាកដថាមាន Role នេះក្នុង Database)
+        $user->assignRole('user');
 
-    Auth::login($user);
+        Auth::login($user);
 
-    return redirect('/dashboard')->with('success', 'ចុះឈ្មោះជោគជ័យ!');
-}
+        return redirect('/dashboard')->with('success', 'ចុះឈ្មោះជោគជ័យ!');
+    }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect('/login');
     }
 }

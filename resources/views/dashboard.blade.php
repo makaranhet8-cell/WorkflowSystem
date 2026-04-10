@@ -4,192 +4,251 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Workflow System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <style>
+        .bg-black-subtle { background-color: #1a1d20 !important; }
+        .nav-link:hover { background-color: #343a40; border-radius: 5px; }
+        .card { border: none; border-radius: 10px; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .active-link { background-color: #0d6efd !important; border-radius: 5px; }
+    </style>
 </head>
 <body class="bg-dark text-white">
-    <div class="container-fluid ">
+    <div class="container-fluid p-0">
         <div class="d-flex">
 
-            <!-- Sidebar -->
-            <div class="bg-black-subtle p-3 vh-100" style="width: 250px;">
-                <h4 class="text-info mb-4">Dashboard</h4>
+            <div class="bg-black-subtle p-3 vh-100 shadow" style="width: 260px; position: sticky; top: 0;">
+                <h4 class="text-info mb-4 text-center"><i class="fa-solid fa-layer-group"></i> Workflow</h4>
+                <hr class="text-secondary">
+                <ul class="nav flex-column">
+                    @if(Auth::user()->can('view home'))
+                    <li class="nav-item mb-2">
+                        <a href="{{ route('dashboard') }}" class="nav-link text-white {{ request()->is('dashboard') ? 'active-link' : '' }}">
+                            <i class="fa-solid fa-house me-2"></i> Home
+                        </a>
+                    </li>
+                    @endif
+                    @if(Auth::user()->can('view leaverequests'))
+                    <li class="nav-item mb-2">
+                        <a href="{{ route('leave-requests.index') }}" class="nav-link text-white {{ request()->is('leave-requests*') ? 'active-link' : '' }}">
+                            <i class="fa-solid fa-calendar-minus me-2"></i> List Leave
+                        </a>
+                    </li>
+                    @endif
+                    @if(Auth::user()->can('view missionrequests'))
+                    <li class="nav-item mb-2">
+                        <a href="{{ route('mission-requests.index') }}" class="nav-link text-white {{ request()->is('mission-requests*') ? 'active-link' : '' }}">
+                            <i class="fa-solid fa-briefcase me-2"></i> List Mission
+                        </a>
+                    </li>
+                    @endif
+                    @hasanyrole('admin|approver|team_leader|hr_manager|ceo|cfo')
+                        <li class="nav-item mb-2">
+                            @if(Auth::user()->can('view approverequests'))
+                            <a href="{{ route('approver.dashboard') }}" class="nav-link text-white">
+                                <i class="fa-solid fa-user-check me-2"></i> Approvals
+                            </a>
+                            @endif
+                        </li>
+                    @endhasanyrole
 
-                <ul class="nav flex-column ">
+                    @hasanyrole('admin|system_admin')
+                    <hr class="text-secondary">
+                    <li class="nav-item mb-2 text-secondary px-3 small uppercase">Administration</li>
                     <li class="nav-item mb-2">
-                        <a href="{{ route('dashboard') }}" class="nav-link text-white ">Home</a>
+                        <a href="{{ route('permissions.index') }}" class="nav-link text-white">
+                            <i class="fa-solid fa-lock me-2"></i> Permissions
+                        </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a href="{{ route('leave-requests.index') }}" class="nav-link text-white">List Leave Requests</a>
+                        <a href="{{ route('roles.index') }}" class="nav-link text-white">
+                            <i class="fa-solid fa-user-shield me-2"></i> Roles
+                        </a>
                     </li>
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('mission-requests.index') }}" class="nav-link text-white">List Mission Requests</a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('approver.dashboard') }}" class="nav-link text-white">Approvers</a>
-                    </li>
-
+                    @endhasanyrole
                 </ul>
             </div>
 
-            <!-- Main Content -->
             <div class="container-fluid m-3">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Welcome to <span class="text-primary">{{ Auth::user()->name }}</span>!</h2>
 
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Welcome to <span class="text-primary">{{ Auth::user()->name }}</span></h2>
-
-                <div class="dropdown">
-                    <div class="d-flex align-items-center" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random&color=fff"
-                            alt="Profile"
-                            class="rounded-circle  border-2 border-secondary me-2"
-                            style="width: 45px; height: 45px; object-fit: cover;">
-                        <div class="text-start">
-                            <span class="d-block fw-bold text-white">{{ Auth::user()->name }}</span>
-                            <small class="text-muted d-block" style="font-size: 0.75rem;">{{ Auth::user()->role ?? 'User' }}</small>
+                    <div class="dropdown">
+                        <div class="d-flex align-items-center bg-black-subtle p-2 rounded-pill shadow-sm" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random&color=fff"
+                                 alt="Profile" class="rounded-circle border border-primary me-2" style="width: 40px; height: 40px;">
+                            <div class="text-start me-3">
+                                <span class="d-block fw-bold text-white" style="font-size: 0.9rem;">{{ Auth::user()->name }}</span>
+                                <small class="text-info d-block" style="font-size: 0.7rem;">
+                                    {{-- បង្ហាញ Role ពី Spatie --}}
+                                    {{ Auth::user()->roles->pluck('name')->implode(', ') ?: 'user' }}
+                                </small>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-muted small"></i>
                         </div>
-                        <i class="ms-2 text-white" style="font-size: 0.8rem;"><i class="fa-solid fa-arrow-down"></i></i>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow">
+                            <li><a class="dropdown-item" href="#"><i class="fa-solid fa-user me-2"></i> Profile</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+                                </a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            </li>
+                        </ul>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="{{ route('logout') }}" class="btn btn-danger">Logout</a></li>
-                    </ul>
                 </div>
-            </div>
-            <div class="row mt-4">
-                <div class="row mt-4">
-                    <div class="col-sm-3">
-                        <div class="card bg-success text-white p-3">
-                            <h6>Users</h6>
-                        <h3>{{ count($allUsers) }}</h3>
-                            <span class="badge bg-secondary">+12%</span>
+                <div class="row g-3 mt-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white p-3 shadow">
+                                <h6><i class="fa-solid fa-users me-2"></i> Total Users</h6>
+                                <h3>{{ count($allUsers) }}</h3>
+                                <span class="badge bg-white text-primary w-50">In Your Dept</span>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card bg-secondary text-white p-3">
-                            <h6>Leave Requests</h6>
-                            <h3>{{ $leaveRequests->count() }}</h3>
-                            <span class="badge bg-danger">-5%</span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white p-3">
-                            <h6>Mission Requests</h6>
-                            <h3>{{ $missionRequests->count() }}</h3>
-                            <span class="badge bg-success">+8%</span>
+                        <div class="card bg-success text-white p-3 shadow">
+                                <h6><i class="fa-solid fa-file-signature me-2 text-warning"></i> Leave Requests</h6>
+                                <h3>{{ count($leaveRequests) }}</h3>
+                                <span class="badge bg-info text-success w-50">Pending Review</span>
                         </div>
                     </div>
 
                     <div class="col-md-3">
-                        <div class="card bg-info text-white p-3">
-                            <h6>Status</h6>
+                        <div class="card bg-warning text-dark p-3 shadow">
+                                <h6><i class="fa-solid fa-plane me-2"></i> Mission Requests</h6>
+                                <h3>{{ count($missionRequests) }}</h3>
+                                <span class="badge bg-dark text-white w-50">Active Missions</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white p-3 shadow">
+                            <h6><i class="fa-solid fa-heart-pulse me-2"></i> Server Status</h6>
                             <h3>99.9%</h3>
-                            <span class="badge bg-primary">Stable</span>
+                            <span class="badge bg-secondary text-info w-50">Stable</span>
                         </div>
                     </div>
-
                 </div>
-                <div class="d-flex justify-content-end gap-2 mt-3">
-                    <!-- Create Leave -->
-                    <a href="{{ route('leave-requests.create') }}"
-                    class="btn btn-outline-primary">
-                        <span><i class="fa-solid fa-user-plus"></i> </span> Leave Request
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                     @if(Auth::user()->can('create leaverequests'))
+                    <a href="{{ route('leave-requests.create') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-plus"></i> New Leave
                     </a>
-                    <!-- Create Mission -->
-                    <a href="{{ route('mission-requests.create') }}"
-                    class="btn btn-outline-info">
-                        <span><i class="fa-solid fa-user-plus"></i> </span> Mission Request
-                    </a>
-                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'system_admin')
-                        <a href="{{ route('admin.users.create') }}"
-                        class="btn btn-outline-success">
-                            <span><i class="fa-solid fa-user-plus"></i> </span> Create User
+                    @endif
+
+                    @if(Auth::user()->can('create missionrequests'))
+                        <a href="{{ route('mission-requests.create') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fa-solid fa-plus"></i> New Mission
                         </a>
                     @endif
+
+                    @hasanyrole('admin|admin_it|admin_sale')
+                        @if(Auth::user()->can('create user'))
+                            <a href="{{ route('admin.users.create') }}" class="btn btn-outline-success btn-sm">
+                                <i class="fa-solid fa-user-plus"></i> Create User
+                            </a>
+                        @endif
+                    @endhasanyrole
                 </div>
 
-
-                <!-- Recent Users Table -->
-                @if (auth()->user()->role === 'admin' || auth()->user()->role === 'system_admin')
-                <div class="card mt-5 bg-dark text-white">
-                    <div class="card-header text-success">
-                        <h5>List Users</h5>
+                @hasanyrole('admin|admin_it|admin_sale')
+                <div class="card mt-4 bg-black-subtle text-white shadow">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-success"><i class="fa-solid fa-list me-2"></i> User Management</h5>
+                        <small class="text-muted ">
+                            <span class="text-light">Department:</span>
+                            @foreach(Auth::user()->departments as $dept)
+                                <span class="badge bg-outline-secondary border text-white">{{ $dept->name }}</span>
+                            @endforeach
+                        </small>
                     </div>
-
                     <div class="card-body">
-                        <table class="table table-dark table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Departments</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle">
+                                <thead class="table-secondary text-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Departments</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($allUsers as $index => $user)
+                                        {{-- លក្ខខណ្ឌការពារចុងក្រោយ៖ បើមិនមែន Admin ធំទេ គឺបង្ហាញតែអ្នក Dept ដូចគ្នា --}}
+                                        @if(Auth::user()->hasRole('admin') || Auth::user()->departments->intersect($user->departments)->count() > 0)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
 
-                            <tbody>
-                                @foreach($allUsers as $index => $user)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $user->name }}</td>
-                                    <td>{{ $user->email }}</td>
-                                    <td>{{ $user->role }}</td>
+                                            <td>{{ $user->name }}</td>
 
-                                    <td>
-                                        @if($user->departments->isEmpty())
-                                            <span class="badge bg-secondary">No Dept</span>
-                                        @else
-                                            @foreach($user->departments as $dept)
-                                                <span class="badge bg-success">{{ $dept->name }}</span>
-                                            @endforeach
+                                            <td>{{ $user->email }}</td>
+
+                                            <td>
+                                                @foreach($user->roles as $role)
+                                                    <span class="badge bg-info text-dark">{{ $role->name }}</span>
+                                                @endforeach
+                                            </td>
+
+                                            <td>
+                                                @forelse($user->departments as $dept)
+                                                    <span class="badge border border-success text-success">{{ $dept->name }}</span>
+                                                @empty
+                                                    <span class="text-muted small italic">No Dept Allocated</span>
+                                                @endforelse
+                                            </td>
+
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    @can('edit department')
+                                                        <a href="{{ route('admin.users.department.edit', $user->id) }}" class="btn btn-sm btn-outline-info" title="Allocate Dept">
+                                                            <i class="fa-solid fa-share-nodes"></i>
+                                                        </a>
+                                                    @endcan
+
+                                                    @can('edit requests')
+                                                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-outline-success">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </a>
+                                                    @endcan
+
+                                                    @can('delete requests')
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="if(confirm('Delete user {{ $user->name }}?')) document.getElementById('delete-user-{{ $user->id }}').submit();">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    @endcan
+                                                </div>
+                                                <form id="delete-user-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-none">
+                                                    @csrf @method('DELETE')
+                                                </form>
+                                            </td>
+                                        </tr>
                                         @endif
-
-                                    </td>
-
-                                    <td>
-                                        <div class="d-flex">
-                                            <a href="{{ route('admin.users.department.edit', $user->id) }}" class="btn btn-info me-2 text-light">
-                                               <i class="fa-solid fa-share-from-square"></i> Allocate
-
-                                            </a>
-                                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-success me-2">
-                                            <i class="fa-solid fa-pen-to-square"></i> Edit
-                                        </a>
-
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="fa-solid fa-trash text-white"></i> Delete
-                                            </button>
-                                        </form>
-                                        </div>
-                                    </td>
-
-
-                                </tr>
-
-                                @endforeach
-
-                            </tbody>
-
-                        </table>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted p-4">
+                                                <i class="fa-solid fa-user-slash d-block mb-2 fs-3"></i>
+                                                No users found in your department.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
-                @endif
+                @endhasanyrole
             </div>
         </div>
+    </div>
 
-
-</div>
-
-
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

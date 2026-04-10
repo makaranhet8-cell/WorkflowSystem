@@ -5,66 +5,75 @@ use App\Models\MissionRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class MissionRequestController extends Controller
+class MissionRequestController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+
+            new Middleware('permission:view missionrequests', only: ['index', 'show']),
+            new Middleware('permission:create missionrequests', only: ['create', 'store']),
+            new Middleware('permission:edit requests', only: ['edit', 'update']),
+            new Middleware('permission:delete requests', only: ['destroy']),
+        ];
+    }
+
     public function index()
-{
-    /** @var User $user */
-    $user = Auth::user();
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $query = MissionRequest::with('user.departments')->latest();
 
-    // បង្កើត Query មូលដ្ឋាន
-    $query = MissionRequest::with('user.departments')->latest();
+        // ១. បើជា Admin ធំ ឬ System Admin ឱ្យឃើញទាំងអស់
+        if ($user->hasAnyRole(['system_admin', 'admin'])) {
+            // No filter needed
+        }
+        // ២. បន្ថែម admin_it និង admin_sale ចូលក្នុងបញ្ជី filter តាម department
+        elseif ($user->hasAnyRole(['admin_it', 'admin_sale', 'department_admin', 'team_leader','ceo','cfo','hr_manager'])) {
+            $adminDeptIds = $user->departments->pluck('id')->toArray();
 
-    // បន្ថែមលក្ខខណ្ឌចម្រោះសម្រាប់ Role Admin
-    if ($user->hasRole('admin')) {
-        $adminDeptIds = $user->departments->pluck('id');
+            $query->whereHas('user.departments', function($q) use ($adminDeptIds) {
+                $q->whereIn('departments.id', $adminDeptIds);
+            });
+        }
+        // ៣. បើជា User ធម្មតា ឃើញតែរបស់ខ្លួនឯង
+        else {
+            $query->where('user_id', $user->id);
+        }
 
-        // បង្ខំឱ្យបង្ហាញតែសំណើរបស់បុគ្គលិកដែលនៅក្នុង Department ជាមួយ Admin ប៉ុណ្ណោះ
-        $query->whereHas('user.departments', function($q) use ($adminDeptIds) {
-            $q->whereIn('departments.id', $adminDeptIds);
-        });
+        $missionRequests = $query->get();
+        return view('mission_requests.index', compact('missionRequests'));
     }
-    // សម្រាប់បុគ្គលិកធម្មតា (Staff) ឱ្យឃើញតែសំណើផ្ទាល់ខ្លួន
-    elseif (!$user->isApproverOrDepartmentAdmin()) {
-        $query->where('user_id', $user->id);
-    }
-
-    $missionRequests = $query->get();
-
-    return view('mission_requests.index', compact('missionRequests'));
-}
 
     public function create()
     {
-        $users = User::whereNotIn('role', [
-            'system_admin','admin', 'ceo', 'hr_manager', 'team_leader', 'department_admin', 'cfo'
-        ])->get();
-
+        // ទាញយក staff ដើម្បីជ្រើសរើសក្នុង dropdown (បើជា Admin បង្កើតឱ្យ staff)
+        $users = User::role('user')->get();
         return view('mission_requests.create', compact('users'));
     }
 
     public function store(Request $request)
     {
+        /** @var User $user */
+        $user = Auth::user();
         $rules = [
             'destination' => 'required|string|max:255',
             'purpose'     => 'required|string|max:500',
-            'start_date'  => 'required|date', // ដក after:today ចេញសិនបើអ្នកចង់តេស្តថ្ងៃនេះ
+            'start_date'  => 'required|date',
             'end_date'    => 'required|date|after_or_equal:start_date',
         ];
 
-        /** @var User|null $user */
-        $user = Auth::user();
-        $userId = Auth::id();
-
-        // បើកសិទ្ធិឱ្យ Admin រើស User បាន
-        if ($user instanceof User && $user->isDepartmentAdmin()) {
+        if ($user->hasAnyRole(['system_admin', 'admin', 'department_admin'])) {
             $rules['user_id'] = 'required|exists:users,id';
         }
 
         $request->validate($rules);
 
-        if ($user instanceof User && $user->isDepartmentAdmin()) {
+        $userId = Auth::id();
+        if ($user->hasAnyRole(['system_admin', 'admin', 'department_admin'])) {
             $userId = $request->input('user_id');
         }
 
@@ -74,65 +83,36 @@ class MissionRequestController extends Controller
             'purpose'     => $request->purpose,
             'start_date'  => $request->start_date,
             'end_date'    => $request->end_date,
-            'status'      => 'pending_tl', // កុំភ្លេចដាក់ status ដើម
+            'status'      => 'pending_tl',
         ]);
 
-        // ប្តូរការ Redirect ទៅកាន់ទំព័របញ្ជី Mission Requests វិញ
-        return redirect()->route('mission-requests.index')->with('success', 'Mission request submitted successfully.');
+        return redirect()->route('mission-requests.index')->with('success', 'បញ្ជូនសំណើបេសកកម្មបានជោគជ័យ។');
     }
+    public function show($id)
+{
 
-    public function edit($id)
-    {
-        $missionRequest = MissionRequest::findOrFail($id);
-        return view('mission_requests.edit', compact('missionRequest'));
-    }
+    $missionRequest = MissionRequest::findOrFail($id);
 
-    public function update(Request $request, $id)
-    {
-        $missionRequest = MissionRequest::findOrFail($id);
 
-        if ($request->has('user_name')) {
-        $missionRequest->user->update([
-            'name' => $request->user_name
-        ]);
-    }
+    return view('mission_requests.show', compact('missionRequest'));
+}
+public function destroy($id)
+{
+    $missionRequest = MissionRequest::findOrFail($id);
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
-        // ត្រូវ Validate មុននឹង Update
-        $request->validate([
-            'destination' => 'required|string',
-            'purpose'     => 'required|string',
-            'start_date'  => 'required|date',
-            'end_date'    => 'required|date|after_or_equal:start_date',
-        ]);
-
-        // Update ព័ត៌មាន (ប្រសិនបើចង់ Update ឈ្មោះ User ត្រូវប្រើ Logic ក្នុង Response មុន)
-        $missionRequest->update([
-            'destination' => $request->destination,
-            'purpose'     => $request->purpose,
-            'start_date'  => $request->start_date,
-            'end_date'    => $request->end_date,
-        ]);
-
-        return redirect()->route('mission-requests.index')->with('success', 'Updated successfully!');
-    }
-
-    public function destroy($id)
-    {
-        $missionRequest = MissionRequest::findOrFail($id);
+    if ($user->hasAnyRole(['admin', 'system_admin'])) {
         $missionRequest->delete();
-
-        return redirect()->route('mission-requests.index')->with('success', 'លុបបានជោគជ័យ!');
+        return redirect()->back()->with('success', 'Admin បានលុបសំណើបេសកកម្មដោយជោគជ័យ។');
     }
 
-    public function show(MissionRequest $missionRequest)
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        if (! ($user instanceof User) || ($missionRequest->user_id !== $user->id && ! $user->isApproverOrDepartmentAdmin())) {
-            abort(403);
-        }
-
-        return view('mission_requests.show', compact('missionRequest'));
+    if ($missionRequest->user_id === $user->id && $missionRequest->status === 'pending_tl') {
+        $missionRequest->delete();
+        return redirect()->back()->with('success', 'អ្នកបានលុបសំណើបេសកកម្មរបស់អ្នកជោគជ័យ។');
     }
+
+
+    return redirect()->back()->with('error', 'អ្នកមិនមានសិទ្ធិលុបសំណើដែលបាន Approve រួចហើយនោះទេ។');
+}
 }

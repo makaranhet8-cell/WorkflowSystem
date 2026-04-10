@@ -6,50 +6,66 @@ use App\Models\LeaveRequest;
 use App\Models\MissionRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class DashboardController extends Controller
+class DashboardController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view dashboard', only: ['index']),
+            new Middleware('permission:create user', only: ['create', 'store']),
+            new Middleware('permission:create leaverequests', only: ['create', 'store']),
+            new Middleware('permission:edit requests', only: ['edit', 'update']),
+            new Middleware('permission:delete requests', only: ['destroy']),
+        ];
+    }
+
     public function index()
     {
+        /** @var User $admin */
         $admin = Auth::user();
+        $adminDeptIds = $admin->departments->pluck('id');
 
-        $userQuery = User::query();
+        // --- ១. រៀបចំ Query សម្រាប់ User (បង្ហាញក្នុង Table) ---
+        $userQuery = User::with(['departments', 'roles']);
 
-        if ($admin->role === 'admin') {
-            $adminDeptIds = $admin->departments->pluck('id');
+        // បើមិនមែន Super Admin ទេ គឺ Filter យកតែអ្នកក្នុង Dept ខ្លួនឯង និងដក Role ធំៗចេញ
+        if (!$admin->hasRole('admin') && $adminDeptIds->isNotEmpty()) {
             $userQuery->whereHas('departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
+            })
+            ->whereDoesntHave('roles', function($q) {
+                $q->whereIn('name', ['admin', 'ceo', 'cfo', 'hr_manager', 'team_leader']);
             });
         }
 
-        $recentUsers = $userQuery->whereNotIn('role', ['admin', 'ceo', 'cfo', 'hr_manager'])
-                                 ->latest()
-                                 ->take(5)
-                                 ->get();
+        // ដកខ្លួនឯងចេញពីបញ្ជី
+        $userQuery->where('id', '!=', $admin->id);
 
-        $leaveQuery = LeaveRequest::with('user.departments');
-        $missionQuery = MissionRequest::with('user.departments');
+        // ទាញយកទិន្នន័យ User សម្រាប់បង្ហាញក្នុង Table និងរាប់ចំនួនសម្រាប់ Card
+        $allUsers = $userQuery->latest()->get();
+        $allUsersCount = $allUsers->count(); // លេខនេះនឹងបង្ហាញ 5 ក្នុង Card ពណ៌ខៀវ
 
-        if ($admin->role === 'admin') {
-            $adminDeptIds = $admin->departments->pluck('id');
+        // --- ២. រៀបចំ Query សម្រាប់ Leave & Mission Requests ---
+        $leaveQuery = LeaveRequest::with('user.departments')->latest();
+        $missionQuery = MissionRequest::with('user.departments')->latest();
 
+        if (!$admin->hasRole('admin') && $adminDeptIds->isNotEmpty()) {
             $leaveQuery->whereHas('user.departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
             });
-
             $missionQuery->whereHas('user.departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
             });
         }
 
-        $leaveRequests = $leaveQuery->get();
-        $missionRequests = $missionQuery->get();
-
         return view('dashboard', [
-            'recentUsers' => $recentUsers,
-            'leaveRequests' => $leaveRequests,
-            'missionRequests' => $missionRequests,
-            'allUsersCount' => $recentUsers->count(), // សម្រាប់បង្ហាញក្នុង Box ពណ៌បៃតង
+            'allUsers'        => $allUsers,
+            'allUsersCount'   => $allUsersCount, // ប្រើក្នុង Card: {{ $allUsersCount }}
+            'leaveRequests'   => $leaveQuery->get(),
+            'missionRequests' => $missionQuery->get(),
         ]);
     }
 }

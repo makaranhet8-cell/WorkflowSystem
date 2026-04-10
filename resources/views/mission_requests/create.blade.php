@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+  
+
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="#">Workflow System</a>
@@ -40,11 +43,13 @@
                 <input type="text" class="form-control" id="destination" name="destination" required>
                 @error('destination') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
+
             <div class="mb-3">
                 <label for="purpose" class="form-label">Purpose</label>
                 <textarea class="form-control" id="purpose" name="purpose" rows="3" required></textarea>
                 @error('purpose') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
+
             <div class="mb-3">
                 <label for="start_date" class="form-label">Start Date</label>
                 <input type="date" class="form-control" id="start_date" name="start_date" required>

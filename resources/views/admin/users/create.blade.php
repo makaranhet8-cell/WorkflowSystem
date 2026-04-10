@@ -41,15 +41,30 @@
             </div>
 
             <div class="mb-3">
+    <label for="department_id" class="form-label">Department</label>
+    <select id="department_id" name="department_id" class="form-select">
+        <option value="" selected disabled>-- Select Department --</option>
+        @foreach($departments as $dept)
+            <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
+                {{ $dept->name }}
+            </option>
+        @endforeach
+    </select>
+    @error('department_id') <div class="text-danger">{{ $message }}</div> @enderror
+</div>
+
+            <div class="mb-3">
                 <label for="role" class="form-label">Role</label>
                 <select id="role" name="role" class="form-select" required>
-                    <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>user</option>
-                    <option value="team_leader" {{ old('role') === 'team_leader' ? 'selected' : '' }}>Team Leader</option>
-                    <option value="hr_manager" {{ old('role') === 'hr_manager' ? 'selected' : '' }}>HR Manager</option>
-                    <option value="ceo" {{ old('role') === 'ceo' ? 'selected' : '' }}>CEO</option>
-                    <option value="cfo" {{ old('role') === 'cfo' ? 'selected' : '' }}>CFO</option>
-                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin Department IT</option>
-                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin Department Sale</option>
+                    <option value="" selected disabled>-- Select Role --</option>
+
+                    {{-- ប្រើ loop ដើម្បីទាញ Role ពី Database --}}
+                    @foreach($roles as $role)
+                        <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>
+                            {{-- ប្តូរឈ្មោះបង្ហាញឱ្យស្អាត (ឧទាហរណ៍ admin ទៅជា Admin) --}}
+                            {{ ucwords(str_replace('_', ' ', $role->name)) }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('role') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
@@ -59,7 +74,6 @@
             </div>
         </form>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
