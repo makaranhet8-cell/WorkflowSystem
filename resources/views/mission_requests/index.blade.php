@@ -19,7 +19,7 @@
 
     <div class="container mt-5">
         <div class="d-flex justify-content-between mt-3 mb-4">
-            <h2 class="text-dark"><i class="fa-solid fa-file-invoice me-2"></i>Leave Request Management</h2>
+            <h2 class="text-dark"><i class="fa-solid fa-file-invoice me-2"></i>Mission Request Management</h2>
 
             <a class="btn btn-secondary" href="{{ route('dashboard') }}"><i class="fa-solid fa-arrow-left"></i>Back Dashboard</a>
         </div>

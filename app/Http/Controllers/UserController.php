@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -57,19 +58,28 @@ class UserController extends Controller implements HasMiddleware
 
     public function store(Request $request)
 {
-
+    // 1. បន្ថែម Validation សម្រាប់ profile_image (អនុញ្ញាតត្រឹម 2MB និងប្រភេទរូបភាព)
     $request->validate([
-        'name'     => 'required|string|max:255',
-        'email'    => 'required|email|unique:users,email',
-        'password' => 'required|min:6',
-        'role'     => 'required|exists:roles,name',
+        'name'          => 'required|string|max:255',
+        'email'         => 'required|email|unique:users,email',
+        'password'      => 'required|min:6',
+        'role'          => 'required|exists:roles,name',
+        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // បន្ថែមត្រង់នេះ
     ]);
 
+    // 2. ចាត់ចែងការ Upload រូបភាព
+    $imagePath = null;
+    if ($request->hasFile('profile_image')) {
+        // រក្សាទុករូបភាពក្នុង storage/app/public/profiles
+        $imagePath = $request->file('profile_image')->store('profiles', 'public');
+    }
 
+    // 3. បង្កើត User ដោយបញ្ចូល profile_image path
     $user = User::create([
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'password' => Hash::make($request->password),
+        'name'          => $request->name,
+        'email'         => $request->email,
+        'password'      => Hash::make($request->password),
+        'profile_image' => $imagePath, // បញ្ចូលទៅក្នុង Database
     ]);
 
     try {
@@ -93,15 +103,32 @@ class UserController extends Controller implements HasMiddleware
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
+        $request->validate([
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $id,
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = User::findOrFail($id);
-        $user->update($validated);
 
-        return redirect()->route('dashboard')->with('success', 'User updated successfully!');
+        if ($request->hasFile('profile_image')) {
+            // កែសម្រួលត្រង់នេះ៖ ប្រើ Storage Facade ឱ្យបានត្រឹមត្រូវ
+            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+            $user->profile_image = $request->file('profile_image')->store('profiles', 'public');
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->save();
+
+        // ប្រសិនបើចង់ Update Role ក្នុងពេល Edit ដែរ
+        if ($request->role) {
+            $user->syncRoles($request->role);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully!');
     }
 
     public function departmentEdit($id)

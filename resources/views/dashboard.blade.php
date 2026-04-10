@@ -76,13 +76,22 @@
 
                     <div class="dropdown">
                         <div class="d-flex align-items-center bg-black-subtle p-2 rounded-pill shadow-sm" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random&color=fff"
-                                 alt="Profile" class="rounded-circle border border-primary me-2" style="width: 40px; height: 40px;">
+
+                            {{-- ត្រង់នេះគឺជាចំណុចសំខាន់៖ ឆែកមើលរូបភាពក្នុង Database --}}
+                            @if(Auth::user()->profile_image)
+                                <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
+                                    alt="Profile" class="rounded-circle border border-primary me-2"
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random&color=fff"
+                                    alt="Profile" class="rounded-circle border border-primary me-2"
+                                    style="width: 40px; height: 40px;">
+                            @endif
+
                             <div class="text-start me-3">
                                 <span class="d-block fw-bold text-white" style="font-size: 0.9rem;">{{ Auth::user()->name }}</span>
                                 <small class="text-info d-block" style="font-size: 0.7rem;">
-                                    {{-- បង្ហាញ Role ពី Spatie --}}
-                                    {{ Auth::user()->roles->pluck('name')->implode(', ') ?: 'user' }}
+                                    {{ Auth::user()->roles->pluck('name')->first() ?: 'user' }}
                                 </small>
                             </div>
                             <i class="fa-solid fa-chevron-down text-muted small"></i>
@@ -91,14 +100,13 @@
                             <li><a class="dropdown-item" href="#"><i class="fa-solid fa-user me-2"></i> Profile</a></li>
                             <li><hr class="dropdown-divider border-secondary"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
-                                </a>
+                            </a>
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
+                                @csrf
                                 </form>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -172,6 +180,7 @@
                                 <thead class="table-secondary text-dark">
                                     <tr>
                                         <th>ID</th>
+                                        <th class="text-center">Photo</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Role</th>
@@ -185,7 +194,17 @@
                                         @if(Auth::user()->hasRole('admin') || Auth::user()->departments->intersect($user->departments)->count() > 0)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-
+                                            <td class="text-center">
+    @if($user->profile_image)
+        <img src="{{ asset('storage/' . $user->profile_image) }}"
+             alt="User" class="rounded-circle border border-secondary"
+             style="width: 35px; height: 35px; object-fit: cover;">
+    @else
+        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random&color=fff"
+             alt="User" class="rounded-circle border border-secondary"
+             style="width: 35px; height: 35px;">
+    @endif
+</td>
                                             <td>{{ $user->name }}</td>
 
                                             <td>{{ $user->email }}</td>

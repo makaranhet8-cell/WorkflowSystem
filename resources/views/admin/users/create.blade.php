@@ -19,9 +19,9 @@
 
     <div class="container mt-5">
         <h1>Create User</h1>
-        <form action="{{ route('admin.users.store') }}" method="POST">
+        <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-
+            <input type="file" name="profile_image" id="image" name="image" class="form-control" value="{{ old('image') }}>
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>

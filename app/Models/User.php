@@ -17,6 +17,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_image'
         // 'role', // លុបចេញ ប្រសិនបើអ្នកប្រើ Spatie Roles table
     ];
 
