@@ -86,7 +86,7 @@
                             <td class="px-5 py-3 text-left">{{ $loop->iteration }}</td>
                             <td class="px-5 py-3 text-left">{{ $permission->name }}</td>
                             <td class="px-5 py-3 text-left">{{ \Carbon\Carbon::parse($permission->created_at)->format('d M, Y') }}</td>
-                            <td >
+                            <td>
                                 <a href="{{ route('permissions.edit',$permission->id) }}" class="btn btn-sm btn-edit">Edit</a>
                                 <form action="{{ route('permissions.destroy', $permission->id) }}" method="POST" style="display:inline;">
                                 @csrf
