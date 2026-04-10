@@ -21,7 +21,7 @@
         <h1>Create User</h1>
         <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <input type="file" name="profile_image" id="image" name="image" class="form-control" value="{{ old('image') }}>
+
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
@@ -41,17 +41,17 @@
             </div>
 
             <div class="mb-3">
-    <label for="department_id" class="form-label">Department</label>
-    <select id="department_id" name="department_id" class="form-select">
-        <option value="" selected disabled>-- Select Department --</option>
-        @foreach($departments as $dept)
-            <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
-                {{ $dept->name }}
-            </option>
-        @endforeach
-    </select>
-    @error('department_id') <div class="text-danger">{{ $message }}</div> @enderror
-</div>
+            <label for="department_id" class="form-label">Department</label>
+            <select id="department_id" name="department_id" class="form-select">
+                <option value="" selected disabled>-- Select Department --</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
+                        {{ $dept->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('department_id') <div class="text-danger">{{ $message }}</div> @enderror
+        </div>
 
             <div class="mb-3">
                 <label for="role" class="form-label">Role</label>
@@ -68,10 +68,15 @@
                 </select>
                 @error('role') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
+           <div class="mb-3">
+                <label for="">Image</label>
+                <input type="file" name="profile_image" class="form-control" >
+            </div>
             <div class="footer d-flex justify-content-between">
                 <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Create User</button>
             </div>
+
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
