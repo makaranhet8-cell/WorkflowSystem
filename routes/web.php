@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     // ២. Requests Management (Resource ដើរតួជា Index, Create, Store, Edit, Update, Destroy)
     Route::resource('leave-requests', LeaveRequestController::class);
     Route::resource('mission-requests', MissionRequestController::class);
-
+    // Route::get('leave-requests',[LeaveRequestController::class,'store']);
     // ៣. User List (សម្រាប់បុគ្គលិកមើលបញ្ជីឈ្មោះរួម)
     Route::get('/users', [UserController::class, 'index'])->name('users.list');
 
