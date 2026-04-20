@@ -90,7 +90,7 @@
                                     <form action="{{ route('mission-requests.destroy', $request->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm mx-1" onclick="return confirm('Are you sure you want to delete this mission?')">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete('{{ $request->id }}', '{{ $request->user->name }}')">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
@@ -106,6 +106,43 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-white text-dark shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-danger"><i class="fa-solid fa-circle-exclamation me-2"></i>Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="mb-1">Are you sure you want to delete mission request of</p>
+                    <h5 id="deleteUserName" class="text-primary fw-bold"></h5>
+                    <p class="text-muted small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-center pb-4">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger px-4 shadow-sm">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function confirmDelete(requestId, userName) {
+            document.getElementById('deleteUserName').innerText = userName;
+
+
+            const form = document.getElementById('deleteForm');
+            form.action = `/mission-requests/${requestId}`;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 </html>

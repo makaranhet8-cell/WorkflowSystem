@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-   
+
 </head>
 <body class="bg-dark text-white">
     <div class="container-fluid p-0">
@@ -70,9 +70,13 @@
                     <h2 class="mb-0">Welcome to <span class="text-primary">{{ Auth::user()->name }}</span>!</h2>
 
                     <div class="dropdown">
+                        <div class="d-flex justify-content-end mb-3">
+                            <button id="theme-toggle" class="btn btn-link text-white shadow-none me-2 p-0">
+                            <i id="theme-icon" class="fa-solid fa-moon fs-5"></i>
+                        </button>
+                        </div>
                         <div class="d-flex align-items-center bg-black-subtle p-2 rounded-pill shadow-sm" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
 
-                            {{-- ត្រង់នេះគឺជាចំណុចសំខាន់៖ ឆែកមើលរូបភាពក្នុង Database --}}
                             @if(Auth::user()->profile_image)
                                 <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
                                     alt="Profile" class="rounded-circle border border-primary me-2"
@@ -84,8 +88,8 @@
                             @endif
 
                             <div class="text-start me-3">
-                                <span class="d-block fw-bold text-white" style="font-size: 0.9rem;">{{ Auth::user()->name }}</span>
-                                <small class="text-info d-block" style="font-size: 0.7rem;">
+                                <span class="d-block fw-bold text-info" style="font-size: 0.9rem;">{{ Auth::user()->name }}</span>
+                                <small class="text-primary d-block" style="font-size: 0.7rem;">
                                     {{ Auth::user()->roles->pluck('name')->first() ?: 'user' }}
                                 </small>
                             </div>
@@ -163,9 +167,9 @@
                     <div class="card-header border-secondary d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 text-success"><i class="fa-solid fa-list me-2"></i> User Management</h5>
                         <small class="text-muted ">
-                            <span class="text-light">Department:</span>
+                            <span class="text-primary">Department:</span>
                             @foreach(Auth::user()->departments as $dept)
-                                <span class="badge bg-outline-secondary border text-white">{{ $dept->name }}</span>
+                                <span class="badge bg-outline-secondary border text-info">{{ $dept->name }}</span>
                             @endforeach
                         </small>
                     </div>
@@ -232,16 +236,12 @@
                                                         </a>
                                                     @endcan
 
-                                                    @can('delete requests')
-                                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                            onclick="if(confirm('Delete user {{ $user->name }}?')) document.getElementById('delete-user-{{ $user->id }}').submit();">
+                                                   @can('delete requests')
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete('{{ $user->id }}', '{{ $user->name }}')">
                                                             <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     @endcan
                                                 </div>
-                                                <form id="delete-user-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-none">
-                                                    @csrf @method('DELETE')
-                                                </form>
                                             </td>
                                         </tr>
                                         @endif
@@ -262,7 +262,28 @@
             </div>
         </div>
     </div>
-
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-black-subtle text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-danger"><i class="fa-solid fa-trash"></i> Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete <strong id="deleteUserName" class="text-info"></strong>?
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ asset('js/dashboard.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
