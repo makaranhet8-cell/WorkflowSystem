@@ -31,12 +31,10 @@ class UserController extends Controller implements HasMiddleware
     if ($authUser->hasAnyRole(['admin_it', 'admin_sale']) && !$authUser->hasRole('admin')) {
         $myDeptIds = $authUser->departments->pluck('id')->toArray();
 
-        // ១. យកតែអ្នកក្នុង Department ខ្លួនឯង
         $query->whereHas('departments', function($q) use ($myDeptIds) {
             $q->whereIn('departments.id', $myDeptIds);
         });
 
-        // ២. កាត់ Role ធំៗចេញ (CEO, Admin...) ដើម្បីឱ្យសល់តែ ៥ នាក់
         $query->whereDoesntHave('roles', function($q) {
             $q->whereIn('name', ['admin', 'ceo', 'cfo', 'hr_manager', 'team_leader','admin_sale']);
         });
@@ -45,7 +43,6 @@ class UserController extends Controller implements HasMiddleware
     $missionRequests = \App\Models\MissionRequest::all();
     $allUsers = $query->get();
 
-    // ... code ផ្សេងៗទៀត ...
     return view('dashboard', compact('allUsers', 'leaveRequests', 'missionRequests'));
 }
     public function create()
@@ -66,15 +63,13 @@ class UserController extends Controller implements HasMiddleware
         'role'          => 'required|exists:roles,name',
         'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // បន្ថែមត្រង់នេះ
     ]);
-
-    // 2. ចាត់ចែងការ Upload រូបភាព
     $imagePath = null;
     if ($request->hasFile('profile_image')) {
-        // រក្សាទុករូបភាពក្នុង storage/app/public/profiles
+
         $imagePath = $request->file('profile_image')->store('profiles', 'public');
     }
 
-    // 3. បង្កើត User ដោយបញ្ចូល profile_image path
+
     $user = User::create([
         'name'          => $request->name,
         'email'         => $request->email,
@@ -112,7 +107,6 @@ class UserController extends Controller implements HasMiddleware
         $user = User::findOrFail($id);
 
         if ($request->hasFile('profile_image')) {
-            // កែសម្រួលត្រង់នេះ៖ ប្រើ Storage Facade ឱ្យបានត្រឹមត្រូវ
             if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
                 Storage::disk('public')->delete($user->profile_image);
             }
@@ -123,7 +117,6 @@ class UserController extends Controller implements HasMiddleware
         $user->email = $request->email;
         $user->save();
 
-        // ប្រសិនបើចង់ Update Role ក្នុងពេល Edit ដែរ
         if ($request->role) {
             $user->syncRoles($request->role);
         }

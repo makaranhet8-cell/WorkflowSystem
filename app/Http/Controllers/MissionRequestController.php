@@ -27,11 +27,10 @@ class MissionRequestController extends Controller implements HasMiddleware
         $user = Auth::user();
         $query = MissionRequest::with('user.departments')->latest();
 
-        // ១. បើជា Admin ធំ ឬ System Admin ឱ្យឃើញទាំងអស់
         if ($user->hasAnyRole(['system_admin', 'admin'])) {
-            // No filter needed
+
         }
-        // ២. បន្ថែម admin_it និង admin_sale ចូលក្នុងបញ្ជី filter តាម department
+
         elseif ($user->hasAnyRole(['admin_it', 'admin_sale', 'department_admin', 'team_leader','ceo','cfo','hr_manager'])) {
             $adminDeptIds = $user->departments->pluck('id')->toArray();
 
@@ -39,7 +38,6 @@ class MissionRequestController extends Controller implements HasMiddleware
                 $q->whereIn('departments.id', $adminDeptIds);
             });
         }
-        // ៣. បើជា User ធម្មតា ឃើញតែរបស់ខ្លួនឯង
         else {
             $query->where('user_id', $user->id);
         }
@@ -50,7 +48,7 @@ class MissionRequestController extends Controller implements HasMiddleware
 
     public function create()
     {
-        // ទាញយក staff ដើម្បីជ្រើសរើសក្នុង dropdown (បើជា Admin បង្កើតឱ្យ staff)
+
         $users = User::role('user')->get();
         return view('mission_requests.create', compact('users'));
     }

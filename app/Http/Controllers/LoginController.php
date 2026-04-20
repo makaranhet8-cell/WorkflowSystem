@@ -21,14 +21,12 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // ១. ផ្ទៀងផ្ទាត់ការ Login (ប្រើ Auth::attempt តែម្តងគឺងាយស្រួលជាង)
         if (Auth::attempt($request->only('email', 'password'))) {
             $request->session()->regenerate();
 
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            // ២. កំណត់ Role ពិសេសតាមរយៈ Email (ប្រសិនបើចង់បាន)
             if ($user->email === 'admin@example.com') {
                 $user->syncRoles(['admin']);
             }
@@ -36,8 +34,6 @@ class LoginController extends Controller
             return redirect()->intended('/dashboard');
         }
 
-        // ៣. បើ Login មិនចូល ឆែកមើលថាតើគួរបង្កើត User Demo ដែរឬទេ?
-        // (ចំណាំ៖ ក្នុងប្រព័ន្ធពិត គេមិនសូវបង្កើត User ក្នុង Login method បែបនេះទេ)
         $userExists = User::where('email', $request->email)->exists();
         if (!$userExists && $request->email === 'admin@example.com') {
              $user = User::create([
@@ -68,7 +64,6 @@ class LoginController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // ដាក់ Role ជា 'user' (ត្រូវប្រាកដថាមាន Role នេះក្នុង Database)
         $user->assignRole('user');
 
         Auth::login($user);

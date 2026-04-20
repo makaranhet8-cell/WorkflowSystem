@@ -28,10 +28,8 @@ class DashboardController extends Controller implements HasMiddleware
         $admin = Auth::user();
         $adminDeptIds = $admin->departments->pluck('id');
 
-        // --- ១. រៀបចំ Query សម្រាប់ User (បង្ហាញក្នុង Table) ---
         $userQuery = User::with(['departments', 'roles']);
 
-        // បើមិនមែន Super Admin ទេ គឺ Filter យកតែអ្នកក្នុង Dept ខ្លួនឯង និងដក Role ធំៗចេញ
         if (!$admin->hasRole('admin') && $adminDeptIds->isNotEmpty()) {
             $userQuery->whereHas('departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
@@ -41,14 +39,12 @@ class DashboardController extends Controller implements HasMiddleware
             });
         }
 
-        // ដកខ្លួនឯងចេញពីបញ្ជី
         $userQuery->where('id', '!=', $admin->id);
 
-        // ទាញយកទិន្នន័យ User សម្រាប់បង្ហាញក្នុង Table និងរាប់ចំនួនសម្រាប់ Card
         $allUsers = $userQuery->latest()->get();
-        $allUsersCount = $allUsers->count(); // លេខនេះនឹងបង្ហាញ 5 ក្នុង Card ពណ៌ខៀវ
+        $allUsersCount = $allUsers->count();
 
-        // --- ២. រៀបចំ Query សម្រាប់ Leave & Mission Requests ---
+       
         $leaveQuery = LeaveRequest::with('user.departments')->latest();
         $missionQuery = MissionRequest::with('user.departments')->latest();
 

@@ -30,16 +30,12 @@ class LeaveRequestController extends Controller implements HasMiddleware
     /** @var \App\Models\User $user */
     $user = Auth::user();
 
-    // ចាប់ផ្ដើម Query ជាមួយ Eager Loading ដើម្បីឱ្យដើរលឿន
     $query = LeaveRequest::with(['user.departments'])->latest();
 
-    // ១. បើជា Admin ធំ (Super Admin) គឺមិនបាច់ Filter ទេ ឱ្យឃើញទាំងអស់
     if ($user->hasRole('admin')) {
-        // Do nothing, see all
+
     }
 
-    // ២. បើជា Admin តាមផ្នែក (IT, Sale) ឬថ្នាក់ដឹកនាំផ្សេងៗ
-    // បន្ថែម 'admin_it' និង 'admin_sale' ទៅក្នុងបញ្ជីនេះ
     elseif ($user->hasAnyRole(['admin_it', 'admin_sale', 'department_admin', 'team_leader', 'hr_manager', 'cfo'])) {
 
         $adminDeptIds = $user->departments->pluck('id')->toArray();
@@ -49,7 +45,6 @@ class LeaveRequestController extends Controller implements HasMiddleware
         });
     }
 
-    // ៣. បើជាបុគ្គលិកធម្មតា ឱ្យឃើញតែសំណើរបស់ខ្លួនឯងប៉ុណ្ណោះ
     else {
         $query->where('user_id', $user->id);
     }
@@ -59,12 +54,8 @@ class LeaveRequestController extends Controller implements HasMiddleware
     return view('leave_requests.index', compact('leaveRequests'));
 }
 
-    /**
-     * បង្ហាញ Form បង្កើតសំណើ (Fix cite: image_990ccc, image_99d3a2)
-     */
     public function create()
     {
-        // ទាញយក staff ដើម្បីជ្រើសរើសក្នុង dropdown (បើជា Admin បង្កើតឱ្យ staff)
         $users = User::role('user')->get();
         return view('leave_requests.create', compact('users'));
     }
@@ -93,7 +84,6 @@ class LeaveRequestController extends Controller implements HasMiddleware
     {
         $leaveRequest = LeaveRequest::findOrFail($id);
 
-        // អនុញ្ញាតឱ្យកែតែសំណើដែលកំពុង Pending
         if ($leaveRequest->status !== 'pending_tl') {
             return redirect()->route('leave-requests.index')->with('error', 'មិនអាចកែប្រែបានទេ ព្រោះសំណើត្រូវបានពិនិត្យរួចហើយ!');
         }
@@ -105,13 +95,11 @@ class LeaveRequestController extends Controller implements HasMiddleware
 {
     $leaveRequest = LeaveRequest::findOrFail($id);
 
-    // Update ឈ្មោះក្នុង Table Users
     $user = $leaveRequest->user;
     $user->update([
-        'name' => $request->user_name // ចាប់យកពី name="user_name" ក្នុង Form
+        'name' => $request->user_name,
     ]);
 
-    // Update ទិន្នន័យច្បាប់
     $leaveRequest->update([
         'reason' => $request->reason,
         'start_date' => $request->start_date,
