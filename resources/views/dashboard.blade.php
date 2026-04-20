@@ -195,16 +195,16 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td class="text-center">
-    @if($user->profile_image)
-        <img src="{{ asset('storage/' . $user->profile_image) }}"
-             alt="User" class="rounded-circle border border-secondary"
-             style="width: 35px; height: 35px; object-fit: cover;">
-    @else
-        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random&color=fff"
-             alt="User" class="rounded-circle border border-secondary"
-             style="width: 35px; height: 35px;">
-    @endif
-</td>
+                                                @if($user->profile_image)
+                                                    <img src="{{ asset('storage/' . $user->profile_image) }}"
+                                                        alt="User" class="rounded-circle border border-secondary"
+                                                        style="width: 35px; height: 35px; object-fit: cover;">
+                                                @else
+                                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random&color=fff"
+                                                        alt="User" class="rounded-circle border border-secondary"
+                                                        style="width: 35px; height: 35px;">
+                                                @endif
+                                            </td>
                                             <td>{{ $user->name }}</td>
 
                                             <td>{{ $user->email }}</td>
