@@ -6,13 +6,8 @@
     <title>Dashboard - Workflow System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .bg-black-subtle { background-color: #1a1d20 !important; }
-        .nav-link:hover { background-color: #343a40; border-radius: 5px; }
-        .card { border: none; border-radius: 10px; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .active-link { background-color: #0d6efd !important; border-radius: 5px; }
-    </style>
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+   
 </head>
 <body class="bg-dark text-white">
     <div class="container-fluid p-0">
