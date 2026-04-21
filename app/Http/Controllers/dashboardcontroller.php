@@ -44,7 +44,7 @@ class DashboardController extends Controller implements HasMiddleware
         $allUsers = $userQuery->latest()->get();
         $allUsersCount = $allUsers->count();
 
-       
+
         $leaveQuery = LeaveRequest::with('user.departments')->latest();
         $missionQuery = MissionRequest::with('user.departments')->latest();
 
