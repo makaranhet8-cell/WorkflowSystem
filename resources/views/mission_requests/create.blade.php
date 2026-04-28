@@ -42,7 +42,7 @@
             @endif
             <div class="mb-3">
                 <label for="destination" class="form-label">Destination</label>
-                <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination') }}" placeholder="e.g. Siem Reap Branch" required>
+                <input type="text" class="form-control" id="destination" name="destination" value="{{ old('destination') }}" placeholder=" Siem Reap Branch" required>
                  @error('destination') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
             </div>
             <div class="mb-3">

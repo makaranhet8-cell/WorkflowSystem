@@ -112,7 +112,7 @@ class UserController extends Controller implements HasMiddleware
         $user = User::findOrFail($id);
         $departmentIds = $request->input('department_ids', []);
         $user->departments()->sync($departmentIds);
-        return redirect()->route('dashboard')->with('success', 'បានដាក់បញ្ជូលផ្នែកដោយជោគជ័យ');
+        return redirect()->route('dashboard')->with('success', 'Departments updated successfully!');
     }
     public function destroy($id)
     {
