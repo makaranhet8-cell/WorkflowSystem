@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approver Dashboard - Workflow System</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="{{ asset('css/approver.css') }}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -22,17 +24,8 @@
     </nav>
 
     <div class="container py-5">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <h1 class="mb-4 text-primary">Pending Requests for Approval</h1>
-
     <div class="row">
-
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-primary text-white">
@@ -145,6 +138,36 @@
         </div>
     </div>
 </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+    @if (session('success'))
+        let msg = "{{ session('success') }}";
+        let toastIcon = 'success';
+        if (msg.toLowerCase().includes("reject") || msg.includes("បដិសេធ")) {
+            toastIcon = 'error';
+        }
+        Toast.fire({
+            icon: toastIcon,
+            title: msg,
+            customClass: {
+                popup: 'colored-toast'
+            }
+        });
+    @endif
+});
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

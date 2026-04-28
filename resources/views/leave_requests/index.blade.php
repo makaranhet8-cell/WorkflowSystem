@@ -5,10 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Leave Requests</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+    .colored-toast.swal2-icon-success {
+        background-color: white !important;
+    }
+    .colored-toast .swal2-title {
+        color: black !important;
+    }
+</style>
 </head>
 <body class="bg-light">
-
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-dark"><i class="fa-solid fa-file-invoice me-2"></i>Leave Request Management</h2>
@@ -52,11 +61,11 @@
                                 <td>
                                     <div class="small">
                                         <i class="fa-regular fa-calendar-check text-primary me-1"></i>
-                                        {{ \Carbon\Carbon::parse($request->start_date)->format('d-m-Y') }}
+                                        {{ ($request->start_date)->format('d-m-Y') }}
                                     </div>
                                     <div class="small text-muted">
                                         <i class="fa-regular fa-calendar-times text-danger me-1"></i>
-                                        {{ \Carbon\Carbon::parse($request->end_date)->format('d-m-Y') }}
+                                        {{ ($request->end_date)->format('d-m-Y') }}
                                     </div>
                                 </td>
                                 <td><span class="text-truncate d-inline-block" style="max-width: 150px;">{{ $request->reason }}</span></td>
@@ -136,18 +145,36 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function confirmDelete(requestId, userName) {
-            document.getElementById('deleteUserName').innerText = userName;
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (session('success'))
+            let message = "{{ session('success') }}";
+            if (!message.includes("លុប") && !message.includes("Delete")) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'colored-toast'
+                    }
+                });
+            }
+        @endif
+    });
 
-            const form = document.getElementById('deleteForm');
-            form.action = `/leave-requests/${requestId}`;
+    function confirmDelete(requestId, userName) {
+        document.getElementById('deleteUserName').innerText = userName;
+        const form = document.getElementById('deleteForm');
+        form.action = `{{ url('leave-requests') }}/${requestId}`;
 
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

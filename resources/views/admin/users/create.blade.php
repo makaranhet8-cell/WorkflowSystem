@@ -57,11 +57,9 @@
                 <label for="role" class="form-label">Role</label>
                 <select id="role" name="role" class="form-select" required>
                     <option value="" selected disabled>-- Select Role --</option>
-
-                    {{-- ប្រើ loop ដើម្បីទាញ Role ពី Database --}}
                     @foreach($roles as $role)
                         <option value="{{ $role->name }}" {{ old('role') === $role->name ? 'selected' : '' }}>
-                            {{-- ប្តូរឈ្មោះបង្ហាញឱ្យស្អាត (ឧទាហរណ៍ admin ទៅជា Admin) --}}
+
                             {{ ucwords(str_replace('_', ' ', $role->name)) }}
                         </option>
                     @endforeach

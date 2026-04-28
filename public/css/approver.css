@@ -1,0 +1,16 @@
+
+ /* Approved */
+    .colored-toast.swal2-icon-success {
+        background-color: #ffffff !important;
+        border-left: 5px solid #a5dc86 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+    /* Rejected */
+    .colored-toast.swal2-icon-error {
+        background-color: #ffffff !important;
+        border-left: 5px solid #f27474 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+    .colored-toast .swal2-title {
+        color: #333 !important;
+    }

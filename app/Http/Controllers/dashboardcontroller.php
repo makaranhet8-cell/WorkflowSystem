@@ -1,14 +1,11 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\LeaveRequest;
 use App\Models\MissionRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-
 class DashboardController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
@@ -21,15 +18,12 @@ class DashboardController extends Controller implements HasMiddleware
             new Middleware('permission:delete requests', only: ['destroy']),
         ];
     }
-
     public function index()
     {
         /** @var User $admin */
         $admin = Auth::user();
         $adminDeptIds = $admin->departments->pluck('id');
-
         $userQuery = User::with(['departments', 'roles']);
-
         if (!$admin->hasRole('admin') && $adminDeptIds->isNotEmpty()) {
             $userQuery->whereHas('departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
@@ -38,16 +32,11 @@ class DashboardController extends Controller implements HasMiddleware
                 $q->whereIn('name', ['admin', 'ceo', 'cfo', 'hr_manager', 'team_leader']);
             });
         }
-
         $userQuery->where('id', '!=', $admin->id);
-
         $allUsers = $userQuery->latest()->get();
         $allUsersCount = $allUsers->count();
-
-
         $leaveQuery = LeaveRequest::with('user.departments')->latest();
         $missionQuery = MissionRequest::with('user.departments')->latest();
-
         if (!$admin->hasRole('admin') && $adminDeptIds->isNotEmpty()) {
             $leaveQuery->whereHas('user.departments', function($q) use ($adminDeptIds) {
                 $q->whereIn('departments.id', $adminDeptIds);
@@ -56,10 +45,9 @@ class DashboardController extends Controller implements HasMiddleware
                 $q->whereIn('departments.id', $adminDeptIds);
             });
         }
-
         return view('dashboard', [
             'allUsers'        => $allUsers,
-            'allUsersCount'   => $allUsersCount, // ប្រើក្នុង Card: {{ $allUsersCount }}
+            'allUsersCount'   => $allUsersCount,
             'leaveRequests'   => $leaveQuery->get(),
             'missionRequests' => $missionQuery->get(),
         ]);

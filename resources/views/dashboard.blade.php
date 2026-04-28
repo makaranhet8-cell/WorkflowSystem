@@ -7,7 +7,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-
+    <style>
+    .colored-toast.swal2-icon-success {
+        background-color: white !important;
+        border-left: 5px solid #a5dc86;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .colored-toast .swal2-title {
+        color: #333 !important;
+    }
+</style>
 </head>
 <body class="bg-dark text-white">
     <div class="container-fluid p-0">
@@ -76,7 +85,6 @@
                         </button>
                         </div>
                         <div class="d-flex align-items-center bg-black-subtle p-2 rounded-pill shadow-sm" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-
                             @if(Auth::user()->profile_image)
                                 <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
                                     alt="Profile" class="rounded-circle border border-primary me-2"
@@ -103,9 +111,9 @@
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
                             </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                @csrf
-                                </form>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                            </form>
                         </ul>
                     </div>
                 </div>
@@ -166,12 +174,6 @@
                 <div class="card mt-4 bg-black-subtle text-white shadow">
                     <div class="card-header border-secondary d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 text-success"><i class="fa-solid fa-list me-2"></i> User Management</h5>
-                        <small class="text-muted ">
-                            <span class="text-primary">Department:</span>
-                            @foreach(Auth::user()->departments as $dept)
-                                <span class="badge bg-outline-secondary border text-info">{{ $dept->name }}</span>
-                            @endforeach
-                        </small>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -189,7 +191,7 @@
                                 </thead>
                                 <tbody>
                                     @forelse($allUsers as $index => $user)
-                                        {{-- លក្ខខណ្ឌការពារចុងក្រោយ៖ បើមិនមែន Admin ធំទេ គឺបង្ហាញតែអ្នក Dept ដូចគ្នា --}}
+
                                         @if(Auth::user()->hasRole('admin') || Auth::user()->departments->intersect($user->departments)->count() > 0)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
@@ -283,6 +285,33 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                let message = "{{ session('success') }}";
+                if (!message.includes("លុប") && !message.toLowerCase().includes("deleted")) {
+
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'colored-toast'
+                        }
+                    });
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: message
+                    });
+                }
+
+            @endif
+        });
+    </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

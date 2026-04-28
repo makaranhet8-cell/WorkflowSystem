@@ -49,7 +49,6 @@
     </style>
   </head>
   <body>
-
     <div class="container">
         @if (Session::has('success'))
             <div class="text-success">
@@ -65,12 +64,19 @@
            <a href="{{ route('dashboard') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         <div class="table-container mt-5">
-
-            <div class="d-flex justify-content-between mb-3">
-                <h2>Role List</h2>
-                @can('insert')
-                    <a href="{{ route('roles.create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create Role</a>
-                @endcan
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <form action="{{ route('roles.index') }}" method="GET" class="d-flex w-50">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="{{ request('search') }}">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary mx-2">Clear</a>
+                        @endif
+                    </div>
+                </form>
+                <a href="{{ route('roles.create') }}" class="btn btn-dark">+ Create</a>
             </div>
             <table class="table table-hover mt-4">
                 <thead>
@@ -87,7 +93,7 @@
                     @if($roles->isNotEmpty())
                         @foreach($roles as $role)
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $role->id }}</td>
                             <td class="px-5 py-3 text-left">{{ $role->name }}</td>
                             <td>{{ $role->permissions->pluck('name')->implode(',') }}</td>
                             <td>{{ \Carbon\Carbon::parse($role->created_at)->format('d M, Y') }}</td>
@@ -110,8 +116,17 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-3">
+            <div class="d-flex justify-content-between ">
+                <div class="text-muted small">
+                    Showing {{ $roles->firstItem() }} to {{ $roles->lastItem() }} of {{ $roles->total() }} results
+                </div>
+                <div>
+                    {{ $roles->links('pagination::bootstrap-4') }}
+                </div>
+            </div>
+        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

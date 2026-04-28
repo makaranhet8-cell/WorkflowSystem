@@ -6,6 +6,13 @@
         <title>Mission Requests</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <style>
+    .colored-toast.swal2-icon-success {
+        background-color: white !important;
+    }
+    .colored-toast .swal2-title {
+        color: black !important;
+    }
     </head>
   <body>
     <style>
@@ -80,7 +87,6 @@
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
                                     @endif
-
                                     <a href="{{ route('mission-requests.show', $request->id) }}" class="btn btn-outline-success btn-sm mx-1">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
@@ -129,20 +135,39 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (session('success'))
+            let message = "{{ session('success') }}";
+            if (!message.includes("លុប") && !message.includes("Delete")) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'colored-toast'
+                    }
+                });
+            }
+        @endif
+    });
+
+    function confirmDelete(requestId, userName) {
+        document.getElementById('deleteUserName').innerText = userName;
+        const form = document.getElementById('deleteForm');
+        form.action = `{{ url('mission-requests') }}/${requestId}`;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        function confirmDelete(requestId, userName) {
-            document.getElementById('deleteUserName').innerText = userName;
-
-
-            const form = document.getElementById('deleteForm');
-            form.action = `/mission-requests/${requestId}`;
-
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 </html>

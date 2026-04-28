@@ -65,9 +65,20 @@
            <a href="{{ route('dashboard') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
         </div>
         <div class="table-container mt-5">
-            <div class="header d-flex justify-content-between">
-                <h2>permission</h2>
-                <a href="{{ route('permissions.create') }}" class="btn btn-dark btn-dark-custom"><i class="fa-solid fa-plus"></i> Create</a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <form action="{{ route('permissions.index') }}" method="GET" class="d-flex w-50">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Search by name..." value="{{ request('search') }}">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('permissions.index') }}" class="btn btn-outline-secondary mx-2">Clear</a>
+                        @endif
+                    </div>
+                </form>
+
+                <a href="{{ route('permissions.create') }}" class="btn btn-dark">+ Create</a>
             </div>
             <table class="table table-hover mt-4">
                 <thead>
@@ -83,7 +94,7 @@
                     @if($permissions->isNotEmpty())
                         @foreach($permissions as $permission)
                         <tr>
-                            <td class="px-5 py-3 text-left">{{ $loop->iteration }}</td>
+                            <td class="px-5 py-3 text-left">{{ $permission->id }}</td>
                             <td class="px-5 py-3 text-left">{{ $permission->name }}</td>
                             <td class="px-5 py-3 text-left">{{ \Carbon\Carbon::parse($permission->created_at)->format('d M, Y') }}</td>
                             <td>
@@ -102,6 +113,16 @@
                     @endif
                 </tbody>
             </table>
+        </div>
+        <div class="mt-3">
+            <div class="d-flex justify-content-between ">
+                <div class="text-muted small">
+                    Showing {{ $permissions->firstItem() }} to {{ $permissions->lastItem() }} of {{ $permissions->total() }} results
+                </div>
+                <div>
+                    {{ $permissions->links('pagination::bootstrap-4') }}
+                </div>
+            </div>
         </div>
     </div>
 
