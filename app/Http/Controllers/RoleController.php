@@ -34,7 +34,7 @@ class RoleController extends Controller
         }
         return redirect()->route('roles.index')->with('success', 'Role added successfully');
     }
-    public function edit($id) {
+    public function edit( int $id) {
         $role = Role::findOrFail($id);
         $permissions = Permission::orderBy('name', 'ASC')->get();
         $hasPermissions = $role->permissions->pluck('name')->toArray();
@@ -44,7 +44,7 @@ class RoleController extends Controller
             'hasPermissions' => $hasPermissions
         ]);
     }
-    public function update($id, Request $request) {
+    public function update( int $id, Request $request) {
         $role = Role::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'name' => 'required|min:3|unique:roles,name,' . $id . ',id'
@@ -61,7 +61,7 @@ class RoleController extends Controller
         }
         return redirect()->route('roles.index')->with('success', 'Role updated successfully');
     }
-    public function destroy($id) {
+    public function destroy( int $id) {
         $role = Role::find($id);
         if ($role == null) {
             return redirect()->route('roles.index')->with('error', 'Role not found');

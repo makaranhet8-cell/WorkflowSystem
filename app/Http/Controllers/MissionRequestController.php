@@ -78,12 +78,12 @@ public function store(Request $request)
     ]);
     return redirect()->route('mission-requests.index')->with('success', 'Request created successfully.');
 }
-    public function show($id)
+    public function show( int $id)
 {
     $missionRequest = MissionRequest::findOrFail($id);
     return view('mission_requests.show', compact('missionRequest'));
 }
-public function destroy($id)
+public function destroy( int $id)
 {
     $missionRequest = MissionRequest::findOrFail($id);
     /** @var \App\Models\User $user */

@@ -45,11 +45,12 @@ class DashboardController extends Controller implements HasMiddleware
                 $q->whereIn('departments.id', $adminDeptIds);
             });
         }
+        dump($allUsers, $leaveQuery->get(), $missionQuery->get());
         return view('dashboard', [
             'allUsers'        => $allUsers,
             'allUsersCount'   => $allUsersCount,
             'leaveRequests'   => $leaveQuery->get(),
             'missionRequests' => $missionQuery->get(),
         ]);
-    }
+    }   
 }

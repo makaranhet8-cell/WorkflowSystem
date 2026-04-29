@@ -29,11 +29,11 @@ class PermissionController extends Controller
         return redirect()->route('permissions.create')->withInput()->withErrors($validator);
     }
     }
-    public function edit($id){
+    public function edit( int $id){
         $permissions = Permission::findOrfail($id);
         return view('permission.edit',['permission'=>$permissions]);
     }
-    public function update($id, Request $request){
+    public function update( int $id, Request $request){
     $permissions = Permission::findOrfail($id);
     $validator = Validator::make($request->all(), [
         'name' => 'required|min:3|unique:permissions,name,'.$id.',id'
@@ -46,7 +46,7 @@ class PermissionController extends Controller
         return redirect()->route('permissions.edit',$id)->withInput()->withErrors($validator);
     }
     }
-  public function destroy($id)
+  public function destroy( int $id)
 {
     $permission = \Spatie\Permission\Models\Permission::find($id);
     if ($permission == null) {
