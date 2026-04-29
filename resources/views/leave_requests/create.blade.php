@@ -22,14 +22,14 @@
             <h1>Submit Leave Request</h1>
             <form action="{{ route('leave-requests.store') }}" method="POST">
                 @csrf
-                @if(Auth::user()->hasAnyRole(['admin', 'admin_it', 'admin_sale', 'system_admin']))
+                @if(Auth::user()->hasAnyRole(['admin', 'admin_it', 'admin_sale']))
                     <div class="mb-3">
                         <label for="user_id" class="form-label text-secondary">Submit on behalf of</label>
                         <select id="user_id" name="user_id" class="form-select" required>
                             <option value="">Select a user</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->email }})
+                                    {{ $user->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -69,7 +69,6 @@
             </form>
         </div>
     @endif
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
