@@ -16,7 +16,7 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-        if (Auth::attempt($request->only('email', 'password'))) {
+        if (Auth::attempt($request->only(['email', 'password']))) {
             $request->session()->regenerate();
             /** @var \App\Models\User $user */
             $user = Auth::user();
@@ -37,7 +37,7 @@ class LoginController extends Controller
             Auth::login($user);
             return redirect()->intended('/dashboard');
         }
-        return back()->withErrors(['email' => 'អ៊ីមែល ឬលេខសម្ងាត់មិនត្រឹមត្រូវ']);
+        return back()->withErrors(['email' => 'Email or password is incorrect']);
     }
     public function register(Request $request)
     {
@@ -55,7 +55,7 @@ class LoginController extends Controller
 
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'ចុះឈ្មោះជោគជ័យ!');
+        return redirect('/dashboard')->with('success', 'Registration successful!');
     }
     public function logout(Request $request)
     {
