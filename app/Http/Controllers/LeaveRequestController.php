@@ -73,7 +73,7 @@ public function store(Request $request)
     ]);
     return redirect()->route('leave-requests.index')->with('success', 'Request created successfully.');
 }
-    public function edit($id)
+    public function edit( int $id)
     {
         $leaveRequest = LeaveRequest::findOrFail($id);
         if ($leaveRequest->status !== 'pending_tl') {
@@ -81,7 +81,7 @@ public function store(Request $request)
         }
         return view('leave_requests.edit', compact('leaveRequest'));
     }
-   public function update(Request $request, $id)
+   public function update(Request $request, int $id)
 {
     $leaveRequest = LeaveRequest::findOrFail($id);
     $user = $leaveRequest->user;
@@ -95,7 +95,7 @@ public function store(Request $request)
     ]);
     return redirect()->route('leave-requests.index')->with('success', 'Request updated successfully!');
 }
-   public function destroy($id)
+   public function destroy( int $id)
 {
     $leaveRequest = LeaveRequest::findOrFail($id);
     /** @var \App\Models\User $user */
